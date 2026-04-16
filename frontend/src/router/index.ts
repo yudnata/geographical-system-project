@@ -1,29 +1,41 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
+      name: 'public-map',
+      component: () => import('@/pages/PublicMapPage.vue'),
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/pages/AuthPage.vue'),
+    },
+    {
+      path: '/dashboard',
       name: 'dashboard',
-      component: () => import('@/pages/HomePage.vue'),
+      component: () => import('@/pages/DashboardPage.vue'),
+      meta: { requiresAuth: true },
     },
     {
-      path: '/add',
-      name: 'add-facility',
-      component: () => import('@/pages/FacilityManagePage.vue'),
-    },
-    {
-      path: '/edit/:id',
-      name: 'edit-facility',
-      component: () => import('@/pages/FacilityManagePage.vue'),
-    },
-    {
-      path: '/list',
-      name: 'facility-list',
-      component: () => import('@/pages/FacilityListPage.vue'),
+      path: '/tabular',
+      name: 'tabular-view',
+      component: () => import('@/pages/TabularPage.vue'),
+      meta: { requiresAuth: true },
     },
   ],
+})
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  if (to.meta.requiresAuth && !authStore.isAuthenticated()) {
+    next('/login')
+  } else {
+    next()
+  }
 })
 
 export default router
