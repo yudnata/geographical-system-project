@@ -1,8 +1,9 @@
-package feature2
+package points
 
 import "github.com/gofiber/fiber/v3"
 
 func RegisterRoutes(router fiber.Router, h *Handler) {
-	f2 := router.Group("/feature2")
-	f2.Post("/", h.Create)
+	pts := router.Group("/points")
+	pts.Post("/", h.Create)
+	pts.Get("/", h.GetAll)
 }

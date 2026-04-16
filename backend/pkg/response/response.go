@@ -15,3 +15,22 @@ func JSON(c fiber.Ctx, status int, success bool, message string, data any) error
 		Data:    data,
 	})
 }
+
+func Success(message string, data ...any) Response {
+	var d any
+	if len(data) > 0 {
+		d = data[0]
+	}
+	return Response{
+		Success: true,
+		Message: message,
+		Data:    d,
+	}
+}
+
+func Error(message string) Response {
+	return Response{
+		Success: false,
+		Message: message,
+	}
+}

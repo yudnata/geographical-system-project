@@ -1,39 +1,43 @@
 package middleware
 
 import (
+	"fmt"
 	"strings"
 
-	"backend/internal/auth/repository"
-	"backend/internal/auth/service"
-	"backend/internal/common/model"
+	"backend/internal/config"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-func AuthRequired(authService *service.AuthService, userRepo *repository.UserRepository) fiber.Handler {
+func AuthRequired(cfg *config.Config) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
-			return c.Status(401).JSON(model.Response{Success: false, Message: "Missing authorization header"})
+			return c.Status(401).JSON(fiber.Map{"success": false, "message": "Missing authorization header"})
 		}
 
 		parts := strings.SplitN(authHeader, " ", 2)
 		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
-			return c.Status(401).JSON(model.Response{Success: false, Message: "Invalid authorization format"})
+			return c.Status(401).JSON(fiber.Map{"success": false, "message": "Invalid authorization format"})
 		}
 
-		userID, err := authService.ValidateToken(parts[1])
-		if err != nil {
-			return c.Status(401).JSON(model.Response{Success: false, Message: "Invalid or expired token"})
+		tokenString := parts[1]
+		token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method")
+			}
+			return []byte(cfg.JWTSecret), nil
+		})
+
+		if err != nil || !token.Valid {
+			return c.Status(401).JSON(fiber.Map{"success": false, "message": "Invalid or expired token"})
 		}
 
-		user, err := userRepo.FindByID(c.Context(), userID)
-		if err != nil {
-			return c.Status(401).JSON(model.Response{Success: false, Message: "User not found"})
+		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			c.Locals("userID", claims["sub"])
 		}
 
-		c.Locals("user", user)
-		c.Locals("userID", userID)
 		return c.Next()
 	}
 }

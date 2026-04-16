@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS geo_points;
+DROP TABLE IF EXISTS object_types;
+DROP TABLE IF EXISTS users;
