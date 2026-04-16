@@ -1,3 +1,9 @@
+# Environment
+.env
+*.env
+.env.*
+!.env.example
+
 # Logs
 logs
 *.log
@@ -7,12 +13,24 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-.DS_Store
-dist
-dist-ssr
-coverage
-*.local
+# Dependencies
+node_modules/
+vendor/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Go & Backend
+bin/
+dist/
+tmp/
+*.exe
+*.test
+backend/tmp_build.exe
 
 # Editor directories and files
 .vscode/*
@@ -23,9 +41,15 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+.vscode/
+.idea/
+*.swp
 
-*.tsbuildinfo
-
+# OS & Misc
+.DS_Store
+Thumbs.db
+*.pem
+.docker/
 .eslintcache
 
 # Cypress
