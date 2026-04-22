@@ -40,5 +40,5 @@ func Migrate(databaseURL string) {
 		log.Fatalf("Migration execution failed: %v", err)
 	}
 
-	log.Println("Database Migrated Successfully via golang-migrate!")
+	log.Println("Databaes Migrated Successfully via golang-migrate!")
 }

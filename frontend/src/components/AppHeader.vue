@@ -67,12 +67,7 @@ const handleLogout = () => {
 
         <div class="relative">
           <img v-if="authStore.user.avatar_url" :src="authStore.user.avatar_url" class="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover" />
-          <div v-else class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center border-2 border-white shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-            </svg>
-          </div>
+          <img v-else :src="authStore.defaultAvatarUrl" class="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover" />
           <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
         </div>
       </div>
@@ -81,11 +76,8 @@ const handleLogout = () => {
         <div class="text-right hidden sm:block">
           <p class="text-xs font-bold text-gray-700 leading-tight tracking-tight uppercase">Guest</p>
         </div>
-        <div class="flex items-center justify-center text-gray-900">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-          </svg>
+        <div class="flex items-center justify-center">
+          <img :src="authStore.defaultAvatarUrl" class="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover" />
         </div>
       </div>
 

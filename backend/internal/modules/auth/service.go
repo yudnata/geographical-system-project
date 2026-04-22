@@ -47,6 +47,7 @@ func (s *Service) Login(input LoginReq) (string, *User, error) {
 		return "", nil, errors.New("Email atau password salah")
 	}
 	token, err := s.generateToken(user.ID)
+	s.ensureAvatar(user)
 	return token, user, err
 }
 
@@ -71,6 +72,7 @@ func (s *Service) SSOLogin(input SSOLoginReq) (string, *User, error) {
 	}
 
 	token, err := s.generateToken(user.ID)
+	s.ensureAvatar(user)
 	return token, user, err
 }
 
@@ -84,5 +86,15 @@ func (s *Service) UpdateProfile(userID string, input UpdateProfileReq) (*User, e
 		return nil, err
 	}
 
-	return s.repo.FindByID(context.Background(), userID)
+	user, err := s.repo.FindByID(context.Background(), userID)
+	if err == nil {
+		s.ensureAvatar(user)
+	}
+	return user, err
+}
+
+func (s *Service) ensureAvatar(u *User) {
+	if u.AvatarURL == nil || *u.AvatarURL == "" {
+		u.AvatarURL = &s.cfg.DefaultAvatarURL
+	}
 }

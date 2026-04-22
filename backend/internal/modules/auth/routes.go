@@ -8,4 +8,5 @@ func RegisterRoutes(router fiber.Router, h *Handler, authMiddleware fiber.Handle
 	auth.Post("/login", h.Login)
 	auth.Post("/sso", h.SSOLogin)
 	auth.Put("/profile", authMiddleware, h.UpdateProfile)
+	auth.Get("/config", h.GetConfig)
 }

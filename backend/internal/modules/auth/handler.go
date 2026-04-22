@@ -64,3 +64,9 @@ func (h *Handler) UpdateProfile(c fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(response.Success("Profil berhasil dilengkapi!", user))
 }
+
+func (h *Handler) GetConfig(c fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(response.Success("Config fetched", fiber.Map{
+		"default_avatar_url": h.service.cfg.DefaultAvatarURL,
+	}))
+}
