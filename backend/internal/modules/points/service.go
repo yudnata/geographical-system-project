@@ -2,6 +2,7 @@ package points
 
 import (
 	"context"
+	"errors"
 )
 
 type Service struct {
@@ -38,7 +39,19 @@ func (s *Service) GetAllPoints(ctx context.Context) ([]GeoPoint, error) {
 	return s.repo.GetAll(ctx)
 }
 
-func (s *Service) UpdatePoint(ctx context.Context, id int, req CreatePointReq) (*GeoPoint, error) {
+func (s *Service) GetMyPoints(ctx context.Context, ownerID string) ([]GeoPoint, error) {
+	return s.repo.GetMyPoints(ctx, ownerID)
+}
+
+func (s *Service) UpdatePoint(ctx context.Context, userID string, id int, req CreatePointReq) (*GeoPoint, error) {
+	existing, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, errors.New("Titik tidak ditemukan")
+	}
+	if existing.OwnerID != userID {
+		return nil, errors.New("Anda tidak memiliki izin untuk mengubah titik ini")
+	}
+
 	typeID := req.TypeID
 	tahunBerdiri := req.TahunBerdiri
 
@@ -60,6 +73,13 @@ func (s *Service) UpdatePoint(ctx context.Context, id int, req CreatePointReq) (
 	return point, nil
 }
 
-func (s *Service) DeletePoint(ctx context.Context, id int) error {
+func (s *Service) DeletePoint(ctx context.Context, userID string, id int) error {
+	existing, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return errors.New("Titik tidak ditemukan")
+	}
+	if existing.OwnerID != userID {
+		return errors.New("Anda tidak memiliki izin untuk menghapus titik ini")
+	}
 	return s.repo.Delete(ctx, id)
 }

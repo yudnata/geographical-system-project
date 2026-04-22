@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useMapPointsStore, type GeoPoint } from '@/stores/mapPoints'
 
 const route = useRoute()
-const router = useRouter()
 const authStore = useAuthStore()
 const store = useMapPointsStore()
 
@@ -16,17 +15,17 @@ const handleSelectPoint = (point: GeoPoint) => {
 
 const pageTitle = computed(() => {
   if (route.path === '/') return 'Peta Publik'
-  if (route.path === '/dashboard') return 'Dashboard Private'
+  if (route.path === '/dashboard') return 'Peta Author'
   if (route.path === '/tabular') return 'Tabel Data Master'
   return 'Sistem Informasi Geografis'
 })
 
 const isDashboard = computed(() => route.path === '/dashboard')
 
-const handleLogout = () => {
-  authStore.logout()
-  router.push('/login')
-}
+const avatarError = ref(false)
+watch(() => authStore.user, () => {
+  avatarError.value = false
+})
 </script>
 
 <template>
@@ -62,7 +61,7 @@ const handleLogout = () => {
                 </svg>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-xs font-extrabold text-gray-900 truncate uppercase tracking-tight">{{ point.name }}</p>
+                <p class="text-xs font-extrabold text-gray-900 truncate tracking-tight">{{ point.name }}</p>
                 <p class="text-[10px] text-gray-500 truncate font-medium">{{ point.address }}</p>
               </div>
             </div>
@@ -125,7 +124,8 @@ const handleLogout = () => {
         </div>
 
         <div class="relative">
-          <img v-if="authStore.user.avatar_url" :src="authStore.user.avatar_url" class="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover" />
+          <img v-if="authStore.user.avatar_url && !avatarError" :src="authStore.user.avatar_url" class="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover"
+            @error="avatarError = true" />
           <img v-else :src="authStore.defaultAvatarUrl" class="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover" />
           <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
         </div>
@@ -136,15 +136,8 @@ const handleLogout = () => {
         <img :src="authStore.defaultAvatarUrl" class="w-8 h-8 rounded-full border-2 border-white shadow-sm object-cover" />
       </div>
 
-      <div class="h-8 w-px bg-gray-100"></div>
 
-      <button v-if="authStore.user" @click="handleLogout" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Keluar">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
-        </svg>
-      </button>
-      <RouterLink v-else to="/login"
+      <RouterLink v-if="!authStore.user" to="/login"
         class="px-5 py-2 bg-primary text-white text-[10px] font-bold rounded-full hover:bg-primary/90 transition-all shadow-sm shadow-primary/20 tracking-tighter uppercase">
         Login
       </RouterLink>

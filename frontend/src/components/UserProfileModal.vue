@@ -32,13 +32,9 @@ const confirmPassword = ref('')
 const isLoading = ref(false)
 const errorMsg = ref('')
 
-const isSsoUser = () => {
-  return authStore.user?.sso_provider != null && authStore.user?.sso_provider !== ''
-}
-
 const handleChangePassword = async () => {
   errorMsg.value = ''
-  if (!isSsoUser() && !oldPassword.value) {
+  if (authStore.user?.has_password && !oldPassword.value) {
     errorMsg.value = 'Password lama wajib diisi.'
     return
   }
@@ -67,6 +63,7 @@ const handleChangePassword = async () => {
     const json = await res.json()
     if (json.success) {
       notificationStore.success('Password berhasil diperbarui!')
+      if (authStore.user) authStore.user.has_password = true
       isChangingPassword.value = false
       oldPassword.value = ''
       newPassword.value = ''
@@ -149,7 +146,7 @@ const handleChangePassword = async () => {
             <div class="flex items-center justify-between">
               <span class="text-xs font-bold text-gray-400 uppercase">Keamanan</span>
               <button @click="isChangingPassword = !isChangingPassword" class="text-xs font-bold text-primary hover:underline">
-                {{ isChangingPassword ? 'Batal' : (isSsoUser() ? 'Set Password' : 'Ubah Password') }}
+                {{ isChangingPassword ? 'Batal' : (authStore.user?.has_password ? 'Ubah Password' : 'Set Password') }}
               </button>
             </div>
 
@@ -157,7 +154,7 @@ const handleChangePassword = async () => {
               <div v-if="errorMsg" class="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-100">
                 {{ errorMsg }}
               </div>
-              <div v-if="!isSsoUser()">
+              <div v-if="authStore.user?.has_password">
                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Password Lama</label>
                 <input v-model="oldPassword" type="password"
                   class="w-full px-3 py-1.5 text-sm bg-white border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none" />

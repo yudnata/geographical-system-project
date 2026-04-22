@@ -11,6 +11,8 @@ export interface User {
   phone?: string
   institution?: string
   is_profile_completed?: boolean
+  has_password?: boolean
+  created_at: string
 }
 
 export interface GoogleUserInfo {
@@ -25,7 +27,7 @@ export const useAuthStore = defineStore('auth', () => {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 
   const defaultAvatarUrl = ref<string>(
-    'https://res.cloudinary.com/di7pw938v/image/upload/v1706764503/user_3_pvyc8x.png',
+    'https://ui-avatars.com/api/?background=random&color=fff&name=User',
   )
   const token = ref<string | null>(localStorage.getItem('auth_token'))
   const user = ref<User | null>(null)
@@ -56,9 +58,33 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('auth_token')
   }
 
-  const isAuthenticated = () => !!token.value
+  const fetchProfile = async () => {
+    if (!token.value) return
+    try {
+      const res = await fetch(`${API_URL}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+      })
+      const data = await res.json()
+      if (data.success) {
+        user.value = data.data
+      } else {
+        logout()
+      }
+    } catch (e) {
+      console.error('[AuthStore] Failed to fetch profile', e)
+    }
+  }
 
-  /** Login dengan Email & Password */
+  if (token.value && !user.value) {
+    fetchProfile()
+  }
+
+  const isAuthenticated = () => {
+    return !!token.value
+  }
+
   const loginWithEmail = async (email: string, password: string) => {
     const res = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
@@ -72,7 +98,6 @@ export const useAuthStore = defineStore('auth', () => {
     return data
   }
 
-  /** Register dengan Email & Password */
   const registerWithEmail = async (name: string, email: string, password: string) => {
     const res = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
@@ -82,7 +107,6 @@ export const useAuthStore = defineStore('auth', () => {
     return await res.json()
   }
 
-  /** Login SSO Google ke Backend */
   const loginWithSSO = async (userInfo: GoogleUserInfo) => {
     const res = await fetch(`${API_URL}/auth/sso`, {
       method: 'POST',
@@ -108,6 +132,7 @@ export const useAuthStore = defineStore('auth', () => {
     defaultAvatarUrl,
     login,
     logout,
+    fetchProfile,
     isAuthenticated,
     fetchConfig,
     loginWithEmail,

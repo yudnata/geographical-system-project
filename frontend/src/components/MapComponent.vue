@@ -133,13 +133,13 @@ onMounted(async () => {
 
   setTimeout(() => map?.invalidateSize(), 100)
   setTimeout(() => map?.invalidateSize(), 500)
+})
 
-  onUnmounted(() => {
-    if (map) {
-      map.remove()
-      map = null
-    }
-  })
+onUnmounted(() => {
+  if (map) {
+    map.remove()
+    map = null
+  }
 })
 
 const renderMarkers = () => {
@@ -179,7 +179,7 @@ const renderMarkers = () => {
 
     marker.bindPopup(`
       <div class="p-3 min-w-[200px] font-sans">
-        <h4 class="font-black text-gray-900 text-sm mb-1 uppercase tracking-tight">${point.name}</h4>
+        <h4 class="font-black text-gray-900 text-sm mb-1 tracking-tight">${point.name}</h4>
         <div class="space-y-1.5 text-[11px]">
           <p class="flex items-start gap-2"><span class="w-20 shrink-0 font-semibold text-gray-400">Kategori:</span> <span class="bg-gray-100 px-1.5 rounded text-gray-700 font-bold">${typeName}</span></p>
           <p class="flex items-start gap-2"><span class="w-20 shrink-0 font-semibold text-gray-400">Alamat:</span> <span class="text-gray-600 leading-normal">${point.address || 'Tanpa Alamat'}</span></p>
@@ -191,7 +191,7 @@ const renderMarkers = () => {
             </svg>
             Kontributor: ${point.owner_name || 'Sistem'}
           </div>
-          ${authStore.isAuthenticated() ? `
+          ${authStore.isAuthenticated() && store.isEditMode && point.owner_id === authStore.user?.id ? `
           <div class="mt-2 flex gap-2 pt-2 border-t border-gray-100">
             <button class="edit-point-btn flex-1 bg-primary/10 hover:bg-primary/20 text-primary font-bold py-1.5 rounded text-[10px] uppercase tracking-wide transition-colors" data-id="${point.id}">Edit</button>
             <button class="delete-point-btn flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-bold py-1.5 rounded text-[10px] uppercase tracking-wide transition-colors" data-id="${point.id}">Hapus</button>
@@ -231,7 +231,7 @@ const renderMarkers = () => {
   })
 }
 
-watch(filteredPoints, () => {
+watch([filteredPoints, isEditMode, () => authStore.user], () => {
   renderMarkers()
 })
 

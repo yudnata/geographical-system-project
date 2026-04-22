@@ -58,7 +58,7 @@ func (s *Service) Login(input LoginReq) (string, *User, error) {
 		return "", nil, errors.New("Password yang Anda masukkan salah")
 	}
 	token, err := s.generateToken(user.ID)
-	s.ensureAvatar(user)
+	s.prepareUser(user)
 	return token, user, err
 }
 
@@ -78,12 +78,13 @@ func (s *Service) SSOLogin(input SSOLoginReq) (string, *User, error) {
 		if createErr := s.repo.Create(context.Background(), user); createErr != nil {
 			return "", nil, createErr
 		}
-	} else if user.SSOID == nil {
+	} else {
 		s.repo.UpdateSSO(context.Background(), user.ID, input.SSOProvider, input.SSOID, input.AvatarURL)
+		user.AvatarURL = &input.AvatarURL
 	}
 
 	token, err := s.generateToken(user.ID)
-	s.ensureAvatar(user)
+	s.prepareUser(user)
 	return token, user, err
 }
 
@@ -99,7 +100,7 @@ func (s *Service) UpdateProfile(userID string, input UpdateProfileReq) (*User, e
 
 	user, err := s.repo.FindByID(context.Background(), userID)
 	if err == nil {
-		s.ensureAvatar(user)
+		s.prepareUser(user)
 	}
 	return user, err
 }
@@ -109,7 +110,7 @@ func (s *Service) GetMe(userID string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	s.ensureAvatar(user)
+	s.prepareUser(user)
 	return user, nil
 }
 
@@ -140,8 +141,9 @@ func (s *Service) UpdatePassword(userID string, req UpdatePasswordReq) error {
 	return s.repo.UpdatePassword(context.Background(), userID, string(hash))
 }
 
-func (s *Service) ensureAvatar(u *User) {
+func (s *Service) prepareUser(u *User) {
 	if u.AvatarURL == nil || *u.AvatarURL == "" {
 		u.AvatarURL = &s.cfg.DefaultAvatarURL
 	}
+	u.HasPassword = u.Password != ""
 }

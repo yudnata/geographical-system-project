@@ -13,6 +13,7 @@ type User struct {
 	Phone              *string   `json:"phone"`
 	Institution        *string   `json:"institution"`
 	IsProfileCompleted bool      `json:"is_profile_completed"`
+	HasPassword        bool      `json:"has_password"`
 	CreatedAt          time.Time `json:"created_at"`
 }
 

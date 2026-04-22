@@ -23,7 +23,7 @@ func Load() *Config {
 		DatabaseURL:      getEnv("DATABASE_URL", ""),
 		JWTSecret:        getEnv("JWT_SECRET", "secret"),
 		Mode:             getEnv("MODE", "development"),
-		DefaultAvatarURL: getEnv("DEFAULT_AVATAR_URL", "https://res.cloudinary.com/di7pw938v/image/upload/v1706764503/user_3_pvyc8x.png"),
+		DefaultAvatarURL: getEnv("DEFAULT_AVATAR_URL", "https://ui-avatars.com/api/?background=random&color=fff&name=User"),
 	}
 }
 

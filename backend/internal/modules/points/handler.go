@@ -35,7 +35,16 @@ func (h *Handler) Create(c fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal menyimpan data: " + err.Error()))
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(response.Success("Titik bangunan berhasil ditambahkan", point))
+	return c.Status(fiber.StatusCreated).JSON(response.Success("Titik berhasil disimpan", point))
+}
+
+func (h *Handler) GetMy(c fiber.Ctx) error {
+	userID := c.Locals("userID").(string)
+	points, err := h.service.GetMyPoints(c.Context(), userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal mengambil titik milik pengguna"))
+	}
+	return c.JSON(response.Success("Berhasil mengambil titik milik pengguna", points))
 }
 
 func (h *Handler) GetAll(c fiber.Ctx) error {
@@ -63,7 +72,8 @@ func (h *Handler) Update(c fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error("Format input tidak valid: " + err.Error()))
 	}
 
-	point, err := h.service.UpdatePoint(c.Context(), id, input)
+	userID := c.Locals("userID").(string)
+	point, err := h.service.UpdatePoint(c.Context(), userID, id, input)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal memperbarui data: " + err.Error()))
 	}
@@ -78,7 +88,8 @@ func (h *Handler) Delete(c fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error("ID tidak valid"))
 	}
 
-	if err := h.service.DeletePoint(c.Context(), id); err != nil {
+	userID := c.Locals("userID").(string)
+	if err := h.service.DeletePoint(c.Context(), userID, id); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal menghapus data: " + err.Error()))
 	}
 
