@@ -87,7 +87,7 @@ watch(() => uiStore.searchQuery, (query) => {
 
         <!-- Section: Real World Addresses (Geocoding) -->
         <div v-if="addressResults.length > 0">
-          <h5 class="px-4 py-2 bg-gray-50/50 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-50 border-t border-gray-50">Hasil dari Peta Global</h5>
+          <h5 class="px-4 py-2 bg-gray-50/50 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] border-y border-gray-50">Hasil dari Peta Global</h5>
           <div v-for="(addr, index) in addressResults" :key="index" @click="handleSelectAddress(addr)"
             class="px-4 py-3 hover:bg-emerald-50 cursor-pointer flex items-center gap-3 transition-colors border-b border-gray-50 last:border-0">
             <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
