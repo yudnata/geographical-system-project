@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterView, RouterLink, useRoute } from 'vue-router'
 import { computed } from 'vue'
-import AppSidebar from '@/components/AppSidebar.vue'
+import AppSidebar from '@/components/Sidebar/AppSidebar.vue'
 import AppHeader from '@/components/Header/AppHeader.vue'
 import NotificationToast from '@/components/NotificationToast.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
