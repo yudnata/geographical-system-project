@@ -3,8 +3,8 @@ import { useMapPointsStore } from '@/stores/mapPoints'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 import MapContainer from '@/components/Map/MapContainer.vue'
-import PointFormModal from '@/components/PointFormModal.vue'
-import ProfileCompletionModal from '@/components/ProfileCompletionModal.vue'
+import PointFormModal from '@/components/Modals/PointFormModal.vue'
+import ProfileCompletionModal from '@/components/Modals/ProfileCompletionModal.vue'
 
 const store = useMapPointsStore()
 const authStore = useAuthStore()

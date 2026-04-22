@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useMapPointsStore } from '@/stores/mapPoints'
-import UserProfileModal from '@/components/UserProfileModal.vue'
+import UserProfileModal from '@/components/Modals/UserProfileModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
