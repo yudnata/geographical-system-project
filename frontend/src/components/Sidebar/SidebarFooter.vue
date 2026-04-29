@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useMapUIStore } from '@/stores/mapUI'
-import UserProfileModal from '@/components/Modals/UserProfileModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const uiStore = useMapUIStore()
 
-const isProfileModalOpen = ref(false)
 
 const handleLogout = () => {
   authStore.logout()
@@ -19,7 +16,7 @@ const handleLogout = () => {
 
 <template>
   <div :class="['mt-auto pb-10 pt-4 border-t border-gray-200 space-y-1 transition-[padding] duration-500', uiStore.isSidebarExpanded ? 'px-6' : 'px-3']">
-    <button @click="isProfileModalOpen = true" class="flex items-center gap-4 px-2.5 py-2.5 rounded-xl transition-colors duration-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600 w-full"
+    <button @click="uiStore.openProfileModal()" class="flex items-center gap-4 px-2.5 py-2.5 rounded-xl transition-colors duration-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600 w-full"
       title="Pengaturan Profil">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 shrink-0">
         <path stroke-linecap="round" stroke-linejoin="round"
@@ -28,8 +25,8 @@ const handleLogout = () => {
       <span class="text-[10px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 tracking-wide uppercase">Pengaturan</span>
     </button>
 
-    <button v-if="authStore.user" @click="handleLogout"
-      class="flex items-center gap-4 px-2.5 py-2.5 rounded-xl transition-colors duration-200 text-gray-400 hover:bg-red-50 hover:text-red-500 w-full" title="Keluar Aplikasi">
+    <button v-if="authStore.user" @click="handleLogout" class="flex items-center gap-4 px-2.5 py-2.5 rounded-xl transition-colors duration-200 text-gray-400 hover:bg-red-50 hover:text-red-500 w-full"
+      title="Keluar Aplikasi">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 shrink-0">
         <path stroke-linecap="round" stroke-linejoin="round"
           d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
@@ -45,5 +42,5 @@ const handleLogout = () => {
     </div>
   </div>
 
-  <UserProfileModal :is-open="isProfileModalOpen" @close="isProfileModalOpen = false" />
+
 </template>

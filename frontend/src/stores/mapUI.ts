@@ -3,6 +3,7 @@ import { ref } from 'vue'
 
 export const useMapUIStore = defineStore('mapUI', () => {
   const isSidebarExpanded = ref(false)
+  const isProfileModalOpen = ref(false)
 
   // Map Interaction State
   const isEditMode = ref(false)
@@ -22,12 +23,21 @@ export const useMapUIStore = defineStore('mapUI', () => {
     isEditMode.value = !isEditMode.value
   }
 
+  const openProfileModal = () => {
+    isProfileModalOpen.value = true
+  }
+
+  const closeProfileModal = () => {
+    isProfileModalOpen.value = false
+  }
+
   const flyTo = (lat: number, lng: number) => {
     flyToCoords.value = { lat, lng }
   }
 
   return {
     isSidebarExpanded,
+    isProfileModalOpen,
     isEditMode,
     flyToCoords,
     searchQuery,
@@ -35,6 +45,8 @@ export const useMapUIStore = defineStore('mapUI', () => {
     filterMyPoints,
     toggleSidebar,
     toggleEditMode,
+    openProfileModal,
+    closeProfileModal,
     flyTo,
   }
 })

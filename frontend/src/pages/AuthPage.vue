@@ -89,7 +89,7 @@ const loginWithGoogle = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 -mt-20">
+  <div class="min-h-screen h-screen flex items-center justify-center bg-gray-50">
     <div class="bg-white p-8 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] w-full max-w-sm">
 
       <!-- Header -->

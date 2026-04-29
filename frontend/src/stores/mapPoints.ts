@@ -69,7 +69,7 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
   const isModalOpen = ref(false)
   const activePoint = ref<GeoPoint | null>(null)
 
-  const confirmData = ref({
+  const confirmState = ref({
     isOpen: false,
     title: '',
     message: '',
@@ -157,7 +157,11 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
   }
 
   const requestConfirm = (title: string, message: string, onConfirm: () => void) => {
-    confirmData.value = { isOpen: true, title, message, onConfirm }
+    confirmState.value = { isOpen: true, title, message, onConfirm }
+  }
+
+  const cancelConfirm = () => {
+    confirmState.value.isOpen = false
   }
 
   const filteredPoints = computed(() => {
@@ -180,7 +184,7 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
     objectTypes,
     isModalOpen,
     activePoint,
-    confirmData,
+    confirmState,
     filteredPoints,
     fetchPoints,
     savePoint,
@@ -188,5 +192,6 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
     openModal,
     closeModal,
     requestConfirm,
+    cancelConfirm,
   }
 })
