@@ -65,17 +65,13 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 
       <!-- Modal Content -->
       <div class="relative bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-lg flex flex-col max-h-[90vh] overflow-hidden transform transition-all border border-white/20">
-        
+
         <PointFormHeader :is-edit="!!formData.id" />
-        
+
         <PointFormFields v-model="formData" />
-        
-        <PointFormActions 
-          :is-edit="!!formData.id" 
-          :is-submitting="isSubmitting" 
-          @submit="submitForm" 
-        />
-        
+
+        <PointFormActions :is-edit="!!formData.id" :is-submitting="isSubmitting" @submit="submitForm" />
+
       </div>
     </div>
   </Transition>
