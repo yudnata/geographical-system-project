@@ -2,6 +2,9 @@
 import { ref, onMounted, onUnmounted, watch, nextTick, h, render } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import 'leaflet.markercluster'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { useMapPointsStore } from '@/stores/mapPoints'
 import { useAuthStore } from '@/stores/auth'
 import { useMapUIStore } from '@/stores/mapUI'
@@ -22,8 +25,9 @@ const { isEditMode, isSidebarExpanded, flyToCoords } = storeToRefs(uiStore)
 
 const mapContainer = ref<HTMLElement | null>(null)
 let map: L.Map | null = null
-let markerLayer: L.LayerGroup | null = null
+let markerLayer: L.MarkerClusterGroup | null = null
 let draftMarker: L.Marker | null = null
+let activeMarkerEl: HTMLElement | null = null
 
 const createDraftMarker = (lat: number, lng: number) => {
   if (!map) return
@@ -79,7 +83,33 @@ onMounted(async () => {
     maxZoom: 19,
   }).addTo(map)
 
-  markerLayer = L.layerGroup().addTo(map)
+  markerLayer = L.markerClusterGroup({
+    showCoverageOnHover: false,
+    zoomToBoundsOnClick: true,
+    spiderfyOnMaxZoom: true,
+    chunkedLoading: true,
+    iconCreateFunction: (cluster) => {
+      const count = cluster.getChildCount()
+      return L.divIcon({
+        html: `<div class="flex items-center justify-center w-10 h-10">
+                 <div class="absolute w-full h-full bg-primary/20 animate-ping rounded-full"></div>
+                 <div class="relative bg-primary/90 backdrop-blur-md text-white rounded-full w-9 h-9 flex items-center justify-center border-2 border-white shadow-xl font-black text-xs tracking-tighter">
+                   ${count}
+                 </div>
+               </div>`,
+        className: 'custom-cluster-icon',
+        iconSize: [40, 40]
+      })
+    }
+  }).addTo(map)
+
+  // Clear highlight when popup is closed
+  map.on('popupclose', () => {
+    if (activeMarkerEl) {
+      activeMarkerEl.classList.remove('marker-highlighted')
+      activeMarkerEl = null
+    }
+  })
 
   map.on('click', async (e: L.LeafletMouseEvent) => {
     if (!uiStore.isEditMode) return
@@ -164,6 +194,21 @@ const renderMarkers = () => {
 
     const marker = L.marker([point.latitude, point.longitude], { icon: customIcon }).addTo(markerLayer!)
 
+    // Highlight the selected marker by toggling CSS class directly on its DOM element
+    marker.on('click', (e) => {
+      L.DomEvent.stopPropagation(e)
+      // Remove highlight from previous marker
+      if (activeMarkerEl) {
+        activeMarkerEl.classList.remove('marker-highlighted')
+      }
+      // Apply highlight to clicked marker
+      const el = (e.target as L.Marker).getElement()
+      if (el) {
+        el.classList.add('marker-highlighted')
+        activeMarkerEl = el
+      }
+    })
+
     const container = document.createElement('div')
     const vnode = h(MapPopupContent, { point, typeName })
     render(vnode, container)
@@ -196,14 +241,19 @@ watch(flyToCoords, (newCoords) => {
   if (newCoords && map) {
     map.flyTo([newCoords.lat, newCoords.lng], 16)
 
-    markerLayer?.eachLayer((layer: L.Layer) => {
-      if (layer instanceof L.Marker) {
-        const latLng = layer.getLatLng()
-        if (latLng.lat === newCoords.lat && latLng.lng === newCoords.lng) {
-          layer.openPopup()
+    setTimeout(() => {
+      markerLayer?.eachLayer((layer: L.Layer) => {
+        if (layer instanceof L.Marker) {
+          const latLng = layer.getLatLng()
+          if (latLng.lat === newCoords.lat && latLng.lng === newCoords.lng) {
+            // Zoom to the marker if it's clustered
+            markerLayer?.zoomToShowLayer(layer, () => {
+              layer.openPopup()
+            })
+          }
         }
-      }
-    })
+      })
+    }, 500)
   }
 })
 </script>
@@ -235,5 +285,49 @@ watch(flyToCoords, (newCoords) => {
 
 .premium-popup .leaflet-popup-tip {
   background: white;
+}
+
+/* Marker Highlight Effect */
+@keyframes radar-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+.marker-highlighted {
+  z-index: 9999 !important;
+}
+
+.marker-highlighted::before,
+.marker-highlighted::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32px;
+  height: 32px;
+  margin-top: -16px;
+  margin-left: -16px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.5);
+  animation: radar-pulse 1.8s ease-out infinite;
+  pointer-events: none;
+}
+
+.marker-highlighted::after {
+  animation-delay: 0.7s;
+}
+
+.marker-highlighted .custom-div-icon>div>div:first-child,
+.marker-highlighted>div>div>div:first-child {
+  transform: scale(1.25) translateY(-3px);
+  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.35), 0 0 0 4px rgba(59, 130, 246, 0.25);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 </style>

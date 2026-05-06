@@ -1,10 +1,18 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useMapPointsStore } from '@/stores/mapPoints'
+import { useMapUIStore } from '@/stores/mapUI'
 import { useNotificationStore } from '@/stores/notifications'
 import MapContainer from '@/components/Map/MapContainer.vue'
 
 const store = useMapPointsStore()
+const uiStore = useMapUIStore()
 const notificationStore = useNotificationStore()
+
+onMounted(() => {
+  uiStore.filterMyPoints = true
+  uiStore.isEditMode = true
+})
 
 const handleMapClick = (data: { lat: number; lng: number; address?: string }) => {
   notificationStore.info('Membuka form...')
