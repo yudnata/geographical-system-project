@@ -1,13 +1,30 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useMapPointsStore } from '@/stores/mapPoints'
 import { useMapUIStore } from '@/stores/mapUI'
+import { useAuthStore } from '@/stores/auth'
 
 const store = useMapPointsStore()
 const uiStore = useMapUIStore()
+const authStore = useAuthStore()
 
 onMounted(async () => {
+  uiStore.filterMyPoints = true
   await store.fetchPoints()
+})
+
+const localSearchQuery = ref('')
+
+const tabularPoints = computed(() => {
+  return store.points.filter((point) => {
+    const matchSearch =
+      point.name.toLowerCase().includes(localSearchQuery.value.toLowerCase()) ||
+      (point.address && point.address.toLowerCase().includes(localSearchQuery.value.toLowerCase()))
+    const matchType = !uiStore.filterTypeId || point.type_id === uiStore.filterTypeId
+    const matchOwner = !uiStore.filterMyPoints || point.owner_id === authStore.user?.id
+
+    return matchSearch && matchType && matchOwner
+  })
 })
 
 const getTypeName = (typeId: number) => {
@@ -47,7 +64,7 @@ const getTypeName = (typeId: number) => {
                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
               </svg>
             </span>
-            <input v-model="uiStore.searchQuery" type="text" placeholder="Cari bangunan atau alamat..."
+            <input v-model="localSearchQuery" type="text" placeholder="Cari bangunan atau alamat..."
               class="pl-9 pr-4 py-2 w-64 bg-white border border-gray-200 rounded-xl focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-xs font-bold shadow-sm" />
           </div>
         </div>
@@ -67,7 +84,7 @@ const getTypeName = (typeId: number) => {
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-            <tr v-for="point in store.filteredPoints" :key="point.id" class="hover:bg-blue-50/40 transition-colors group">
+            <tr v-for="point in tabularPoints" :key="point.id" class="hover:bg-blue-50/40 transition-colors group">
               <td class="py-4 px-6 text-sm text-gray-500 font-mono">#{{ point.id }}</td>
               <td class="py-4 px-6">
                 <div class="font-bold text-gray-800">{{ point.name }}</div>
@@ -90,11 +107,17 @@ const getTypeName = (typeId: number) => {
                 <span v-else class="text-red-500 text-xs font-bold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Nonaktif</span>
               </td>
               <td class="py-4 px-6 text-center">
-                <button @click="store.openModal(point)"
-                  class="px-3 py-1.5 text-xs font-bold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors opacity-0 group-hover:opacity-100">Edit Data</button>
+                <button @click="point.owner_id === authStore.user?.id ? store.openModal(point) : null" :disabled="point.owner_id !== authStore.user?.id" :class="[
+                  'px-3 py-1.5 text-xs font-bold rounded-lg transition-all',
+                  point.owner_id === authStore.user?.id
+                    ? 'text-primary bg-primary/10 hover:bg-primary/20'
+                    : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                ]">
+                  {{ point.owner_id === authStore.user?.id ? 'Edit Data' : 'Hanya Lihat' }}
+                </button>
               </td>
             </tr>
-            <tr v-if="store.filteredPoints.length === 0">
+            <tr v-if="tabularPoints.length === 0">
               <td colspan="7" class="py-12 text-center text-gray-400 text-sm">Tidak ada data bangunan yang ditemukan.</td>
             </tr>
           </tbody>
