@@ -3,7 +3,7 @@ import { onMounted } from 'vue'
 import { useMapPointsStore } from '@/stores/mapPoints'
 import { useMapUIStore } from '@/stores/mapUI'
 import { useNotificationStore } from '@/stores/notifications'
-import MapContainer from '@/components/Map/MapContainer.vue'
+import MapContainer from '@/features/map/components/MapContainer.vue'
 
 const store = useMapPointsStore()
 const uiStore = useMapUIStore()

@@ -12,6 +12,7 @@ export interface User {
   institution?: string
   is_profile_completed?: boolean
   has_password?: boolean
+  role: string
   created_at: string
 }
 
@@ -85,6 +86,14 @@ export const useAuthStore = defineStore('auth', () => {
     return !!token.value
   }
 
+  const isAdmin = () => {
+    return user.value?.role === 'admin'
+  }
+
+  const isContributor = () => {
+    return user.value?.role === 'contributor' || user.value?.role === 'admin'
+  }
+
   const loginWithEmail = async (email: string, password: string) => {
     const res = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
@@ -138,5 +147,7 @@ export const useAuthStore = defineStore('auth', () => {
     loginWithEmail,
     registerWithEmail,
     loginWithSSO,
+    isAdmin,
+    isContributor,
   }
 })

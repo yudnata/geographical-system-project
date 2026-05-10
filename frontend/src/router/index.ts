@@ -9,7 +9,7 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('@/pages/AuthPage.vue'),
+      component: () => import('@/features/auth/AuthPage.vue'),
     },
     // All app pages - wrapped inside MainLayout
     {
@@ -19,18 +19,18 @@ const router = createRouter({
         {
           path: '',
           name: 'public-map',
-          component: () => import('@/pages/PublicMapPage.vue'),
+          component: () => import('@/features/map/PublicMapPage.vue'),
         },
         {
           path: 'dashboard',
           name: 'dashboard',
-          component: () => import('@/pages/DashboardPage.vue'),
+          component: () => import('@/features/dashboard/DashboardPage.vue'),
           meta: { requiresAuth: true },
         },
         {
           path: 'tabular',
           name: 'tabular-view',
-          component: () => import('@/pages/TabularPage.vue'),
+          component: () => import('@/features/dashboard/TabularPage.vue'),
           meta: { requiresAuth: true },
         },
       ],
@@ -40,8 +40,13 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const authStore = useAuthStore()
+  
   if (to.meta.requiresAuth && !authStore.isAuthenticated()) {
     return { name: 'login' }
+  }
+
+  if (to.meta.requiresAdmin && !authStore.isAdmin()) {
+    return { name: 'public-map' } // Redirect to home if not admin
   }
 })
 

@@ -22,10 +22,11 @@ func NewService(repo *Repository, cfg *config.Config) *Service {
 	return &Service{repo: repo, cfg: cfg}
 }
 
-func (s *Service) generateToken(userID string) (string, error) {
+func (s *Service) generateToken(user *User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": userID,
-		"exp": time.Now().Add(24 * time.Hour).Unix(),
+		"sub":  user.ID,
+		"role": user.Role,
+		"exp":  time.Now().Add(24 * time.Hour).Unix(),
 	})
 	return token.SignedString([]byte(s.cfg.JWTSecret))
 }
@@ -38,6 +39,7 @@ func (s *Service) Register(input RegisterReq) (*User, error) {
 		Name:      input.Name,
 		Password:  string(hash),
 		CreatedAt: time.Now(),
+		Role:      "contributor",
 	}
 	return user, s.repo.Create(context.Background(), user)
 }
@@ -57,7 +59,7 @@ func (s *Service) Login(input LoginReq) (string, *User, error) {
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)) != nil {
 		return "", nil, errors.New("Password yang Anda masukkan salah")
 	}
-	token, err := s.generateToken(user.ID)
+	token, err := s.generateToken(user)
 	s.prepareUser(user)
 	return token, user, err
 }
@@ -83,7 +85,7 @@ func (s *Service) SSOLogin(input SSOLoginReq) (string, *User, error) {
 		user.AvatarURL = &input.AvatarURL
 	}
 
-	token, err := s.generateToken(user.ID)
+	token, err := s.generateToken(user)
 	s.prepareUser(user)
 	return token, user, err
 }

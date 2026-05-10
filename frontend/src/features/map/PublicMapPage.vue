@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMapUIStore } from '@/stores/mapUI'
-import MapContainer from '@/components/Map/MapContainer.vue'
+import MapContainer from '@/features/map/components/MapContainer.vue'
 
 const uiStore = useMapUIStore()
 

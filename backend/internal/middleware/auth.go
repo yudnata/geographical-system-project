@@ -36,6 +36,7 @@ func AuthRequired(cfg *config.Config) fiber.Handler {
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
 			c.Locals("userID", claims["sub"])
+			c.Locals("role", claims["role"])
 		}
 
 		return c.Next()
