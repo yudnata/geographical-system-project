@@ -15,20 +15,20 @@ func NewRepository(db *pgxpool.Pool) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) Create(ctx context.Context, p *GeoPoint) error {
+func (r *Repository) Create(ctx context.Context, p *MapPoint) error {
 	query := `
-		INSERT INTO geo_points (
-			type_id, name, latitude, longitude, address, owner_id,
-			tahun_berdiri, status_kepemilikan, description, is_active,
+		INSERT INTO map_points (
+			category_id, name, latitude, longitude, address, owner_id,
+			tahun_berdiri, status_kepemilikan, description, is_active, status, rejection_note,
 			created_at, updated_at
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 		RETURNING id
 	`
 
 	now := time.Now()
 	err := r.db.QueryRow(ctx, query,
-		p.TypeID,
+		p.CategoryID,
 		p.Name,
 		p.Latitude,
 		p.Longitude,
@@ -38,6 +38,8 @@ func (r *Repository) Create(ctx context.Context, p *GeoPoint) error {
 		p.StatusKepemilikan,
 		p.Description,
 		p.IsActive,
+		p.Status,
+		p.RejectionNote,
 		now,
 		now,
 	).Scan(&p.ID)
@@ -49,11 +51,11 @@ func (r *Repository) Create(ctx context.Context, p *GeoPoint) error {
 	return err
 }
 
-func (r *Repository) GetAll(ctx context.Context) ([]GeoPoint, error) {
+func (r *Repository) GetAll(ctx context.Context) ([]MapPoint, error) {
 	query := `
-		SELECT gp.id, gp.type_id, gp.name, gp.latitude, gp.longitude, gp.address, gp.owner_id, COALESCE(u.name, 'Sistem'),
-		gp.tahun_berdiri, gp.status_kepemilikan, gp.description, gp.is_active, gp.created_at, gp.updated_at
-		FROM geo_points gp
+		SELECT gp.id, gp.category_id, gp.name, gp.latitude, gp.longitude, gp.address, gp.owner_id, COALESCE(u.name, 'Sistem'),
+		gp.tahun_berdiri, gp.status_kepemilikan, gp.description, gp.is_active, gp.status, gp.rejection_note, gp.created_at, gp.updated_at
+		FROM map_points gp
 		LEFT JOIN users u ON gp.owner_id = u.id
 		WHERE gp.is_active = true
 	`
@@ -63,13 +65,13 @@ func (r *Repository) GetAll(ctx context.Context) ([]GeoPoint, error) {
 	}
 	defer rows.Close()
 
-	points := []GeoPoint{}
+	points := []MapPoint{}
 	for rows.Next() {
-		var p GeoPoint
+		var p MapPoint
 		err := rows.Scan(
-			&p.ID, &p.TypeID, &p.Name, &p.Latitude, &p.Longitude,
+			&p.ID, &p.CategoryID, &p.Name, &p.Latitude, &p.Longitude,
 			&p.Address, &p.OwnerID, &p.OwnerName, &p.TahunBerdiri, &p.StatusKepemilikan,
-			&p.Description, &p.IsActive, &p.CreatedAt, &p.UpdatedAt,
+			&p.Description, &p.IsActive, &p.Status, &p.RejectionNote, &p.CreatedAt, &p.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -79,11 +81,11 @@ func (r *Repository) GetAll(ctx context.Context) ([]GeoPoint, error) {
 	return points, nil
 }
 
-func (r *Repository) GetMyPoints(ctx context.Context, ownerID string) ([]GeoPoint, error) {
+func (r *Repository) GetMyPoints(ctx context.Context, ownerID string) ([]MapPoint, error) {
 	query := `
-		SELECT gp.id, gp.type_id, gp.name, gp.latitude, gp.longitude, gp.address, gp.owner_id, COALESCE(u.name, 'Sistem'),
-		gp.tahun_berdiri, gp.status_kepemilikan, gp.description, gp.is_active, gp.created_at, gp.updated_at
-		FROM geo_points gp
+		SELECT gp.id, gp.category_id, gp.name, gp.latitude, gp.longitude, gp.address, gp.owner_id, COALESCE(u.name, 'Sistem'),
+		gp.tahun_berdiri, gp.status_kepemilikan, gp.description, gp.is_active, gp.status, gp.rejection_note, gp.created_at, gp.updated_at
+		FROM map_points gp
 		LEFT JOIN users u ON gp.owner_id = u.id
 		WHERE gp.is_active = true AND gp.owner_id = $1
 	`
@@ -93,13 +95,13 @@ func (r *Repository) GetMyPoints(ctx context.Context, ownerID string) ([]GeoPoin
 	}
 	defer rows.Close()
 
-	points := []GeoPoint{}
+	points := []MapPoint{}
 	for rows.Next() {
-		var p GeoPoint
+		var p MapPoint
 		err := rows.Scan(
-			&p.ID, &p.TypeID, &p.Name, &p.Latitude, &p.Longitude,
+			&p.ID, &p.CategoryID, &p.Name, &p.Latitude, &p.Longitude,
 			&p.Address, &p.OwnerID, &p.OwnerName, &p.TahunBerdiri, &p.StatusKepemilikan,
-			&p.Description, &p.IsActive, &p.CreatedAt, &p.UpdatedAt,
+			&p.Description, &p.IsActive, &p.Status, &p.RejectionNote, &p.CreatedAt, &p.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -108,14 +110,15 @@ func (r *Repository) GetMyPoints(ctx context.Context, ownerID string) ([]GeoPoin
 	}
 	return points, nil
 }
-func (r *Repository) GetByID(ctx context.Context, id int) (*GeoPoint, error) {
-	var p GeoPoint
+
+func (r *Repository) GetByID(ctx context.Context, id int) (*MapPoint, error) {
+	var p MapPoint
 	err := r.db.QueryRow(ctx, 
-		`SELECT id, type_id, name, latitude, longitude, address, owner_id, tahun_berdiri, status_kepemilikan, description, is_active, created_at, updated_at 
-		 FROM geo_points WHERE id=$1`, id).Scan(
-		&p.ID, &p.TypeID, &p.Name, &p.Latitude, &p.Longitude,
+		`SELECT id, category_id, name, latitude, longitude, address, owner_id, tahun_berdiri, status_kepemilikan, description, is_active, status, rejection_note, created_at, updated_at 
+		 FROM map_points WHERE id=$1`, id).Scan(
+		&p.ID, &p.CategoryID, &p.Name, &p.Latitude, &p.Longitude,
 		&p.Address, &p.OwnerID, &p.TahunBerdiri, &p.StatusKepemilikan,
-		&p.Description, &p.IsActive, &p.CreatedAt, &p.UpdatedAt,
+		&p.Description, &p.IsActive, &p.Status, &p.RejectionNote, &p.CreatedAt, &p.UpdatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -123,16 +126,16 @@ func (r *Repository) GetByID(ctx context.Context, id int) (*GeoPoint, error) {
 	return &p, nil
 }
 
-func (r *Repository) Update(ctx context.Context, id int, p *GeoPoint) error {
+func (r *Repository) Update(ctx context.Context, id int, p *MapPoint) error {
 	_, err := r.db.Exec(ctx,
-		`UPDATE geo_points
-		SET type_id=$1, name=$2, latitude=$3, longitude=$4, address=$5, tahun_berdiri=$6, status_kepemilikan=$7, description=$8, updated_at=$9
-		WHERE id=$10`,
-		p.TypeID, p.Name, p.Latitude, p.Longitude, p.Address, p.TahunBerdiri, p.StatusKepemilikan, p.Description, time.Now(), id)
+		`UPDATE map_points
+		SET category_id=$1, name=$2, latitude=$3, longitude=$4, address=$5, tahun_berdiri=$6, status_kepemilikan=$7, description=$8, is_active=$9, status=$10, rejection_note=$11, updated_at=$12
+		WHERE id=$13`,
+		p.CategoryID, p.Name, p.Latitude, p.Longitude, p.Address, p.TahunBerdiri, p.StatusKepemilikan, p.Description, p.IsActive, p.Status, p.RejectionNote, time.Now(), id)
 	return err
 }
 
 func (r *Repository) Delete(ctx context.Context, id int) error {
-	_, err := r.db.Exec(ctx, `DELETE FROM geo_points WHERE id=$1`, id)
+	_, err := r.db.Exec(ctx, `DELETE FROM map_points WHERE id=$1`, id)
 	return err
 }

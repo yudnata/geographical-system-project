@@ -2,15 +2,15 @@ package points
 
 import "time"
 
-type ObjectType struct {
+type Category struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 	Icon string `json:"icon"`
 }
 
-type GeoPoint struct {
+type MapPoint struct {
 	ID                int       `json:"id"`
-	TypeID            *int      `json:"type_id"`
+	CategoryID        *int      `json:"category_id"`
 	Name              string    `json:"name"`
 	Latitude          float64   `json:"latitude"`
 	Longitude         float64   `json:"longitude"`
@@ -21,12 +21,24 @@ type GeoPoint struct {
 	StatusKepemilikan string    `json:"status_kepemilikan"`
 	Description       string    `json:"description"`
 	IsActive          bool      `json:"is_active"`
+	Status            string    `json:"status"`
+	RejectionNote     *string   `json:"rejection_note"`
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
 }
 
+type Blog struct {
+	ID         int       `json:"id"`
+	MapPointID int       `json:"map_point_id"`
+	Title      string    `json:"title"`
+	Content    string    `json:"content"`
+	CoverPhoto *string   `json:"cover_photo"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
+
 type CreatePointReq struct {
-	TypeID            int     `json:"type_id"`
+	CategoryID        int     `json:"category_id"`
 	Name              string  `json:"name"`
 	Latitude          float64 `json:"latitude"`
 	Longitude         float64 `json:"longitude"`
@@ -34,10 +46,11 @@ type CreatePointReq struct {
 	TahunBerdiri      int     `json:"tahun_berdiri"`
 	StatusKepemilikan string  `json:"status_kepemilikan"`
 	Description       string  `json:"description"`
+	Status            string  `json:"status"` // draft or pending
 }
 
 type UpdatePointReq struct {
-	TypeID            int     `json:"type_id"`
+	CategoryID        int     `json:"category_id"`
 	Name              string  `json:"name"`
 	Latitude          float64 `json:"latitude"`
 	Longitude         float64 `json:"longitude"`
@@ -46,4 +59,5 @@ type UpdatePointReq struct {
 	StatusKepemilikan string  `json:"status_kepemilikan"`
 	Description       string  `json:"description"`
 	IsActive          bool    `json:"is_active"`
+	Status            string  `json:"status"` // draft or pending
 }

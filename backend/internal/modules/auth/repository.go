@@ -16,8 +16,8 @@ func NewRepository(db *pgxpool.Pool) *Repository {
 
 func (r *Repository) Create(ctx context.Context, u *User) error {
 	_, err := r.db.Exec(ctx,
-		`INSERT INTO users (id, email, name, password, sso_provider, sso_id, avatar_url, phone, institution, is_profile_completed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-		u.ID, u.Email, u.Name, nullIfEmpty(u.Password), u.SSOProvider, u.SSOID, u.AvatarURL, nullIfEmptyPtr(u.Phone), nullIfEmptyPtr(u.Institution), u.IsProfileCompleted,
+		`INSERT INTO users (id, email, name, password, sso_provider, sso_id, avatar_url, phone, institution, is_profile_completed, role) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+		u.ID, u.Email, u.Name, nullIfEmpty(u.Password), u.SSOProvider, u.SSOID, u.AvatarURL, nullIfEmptyPtr(u.Phone), nullIfEmptyPtr(u.Institution), u.IsProfileCompleted, u.Role,
 	)
 	return err
 }
@@ -25,8 +25,8 @@ func (r *Repository) Create(ctx context.Context, u *User) error {
 func (r *Repository) FindByEmail(ctx context.Context, email string) (*User, error) {
 	var u User
 	var pw, ssoProv, ssoId, avatarUrl, phone, institution *string
-	err := r.db.QueryRow(ctx, `SELECT id, email, name, password, sso_provider, sso_id, avatar_url, phone, institution, is_profile_completed, created_at FROM users WHERE email = $1`, email).
-		Scan(&u.ID, &u.Email, &u.Name, &pw, &ssoProv, &ssoId, &avatarUrl, &phone, &institution, &u.IsProfileCompleted, &u.CreatedAt)
+	err := r.db.QueryRow(ctx, `SELECT id, email, name, password, sso_provider, sso_id, avatar_url, phone, institution, is_profile_completed, role, created_at FROM users WHERE email = $1`, email).
+		Scan(&u.ID, &u.Email, &u.Name, &pw, &ssoProv, &ssoId, &avatarUrl, &phone, &institution, &u.IsProfileCompleted, &u.Role, &u.CreatedAt)
 
 	if pw != nil {
 		u.Password = *pw
@@ -43,8 +43,8 @@ func (r *Repository) FindByEmail(ctx context.Context, email string) (*User, erro
 func (r *Repository) FindByID(ctx context.Context, id string) (*User, error) {
 	var u User
 	var pw, ssoProv, ssoId, avatarUrl, phone, institution *string
-	err := r.db.QueryRow(ctx, `SELECT id, email, name, password, sso_provider, sso_id, avatar_url, phone, institution, is_profile_completed, created_at FROM users WHERE id = $1`, id).
-		Scan(&u.ID, &u.Email, &u.Name, &pw, &ssoProv, &ssoId, &avatarUrl, &phone, &institution, &u.IsProfileCompleted, &u.CreatedAt)
+	err := r.db.QueryRow(ctx, `SELECT id, email, name, password, sso_provider, sso_id, avatar_url, phone, institution, is_profile_completed, role, created_at FROM users WHERE id = $1`, id).
+		Scan(&u.ID, &u.Email, &u.Name, &pw, &ssoProv, &ssoId, &avatarUrl, &phone, &institution, &u.IsProfileCompleted, &u.Role, &u.CreatedAt)
 
 	if pw != nil {
 		u.Password = *pw

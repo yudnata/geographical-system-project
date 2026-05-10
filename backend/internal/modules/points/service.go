@@ -13,9 +13,14 @@ func NewService(repo *Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) CreatePoint(ctx context.Context, ownerID string, input CreatePointReq) (*GeoPoint, error) {
-	point := &GeoPoint{
-		TypeID:            &input.TypeID,
+func (s *Service) CreatePoint(ctx context.Context, ownerID string, input CreatePointReq) (*MapPoint, error) {
+	status := input.Status
+	if status == "" {
+		status = "draft"
+	}
+	
+	point := &MapPoint{
+		CategoryID:        &input.CategoryID,
 		Name:              input.Name,
 		Latitude:          input.Latitude,
 		Longitude:         input.Longitude,
@@ -25,6 +30,7 @@ func (s *Service) CreatePoint(ctx context.Context, ownerID string, input CreateP
 		StatusKepemilikan: input.StatusKepemilikan,
 		Description:       input.Description,
 		IsActive:          true,
+		Status:            status,
 	}
 
 	err := s.repo.Create(ctx, point)
@@ -35,15 +41,15 @@ func (s *Service) CreatePoint(ctx context.Context, ownerID string, input CreateP
 	return point, nil
 }
 
-func (s *Service) GetAllPoints(ctx context.Context) ([]GeoPoint, error) {
+func (s *Service) GetAllPoints(ctx context.Context) ([]MapPoint, error) {
 	return s.repo.GetAll(ctx)
 }
 
-func (s *Service) GetMyPoints(ctx context.Context, ownerID string) ([]GeoPoint, error) {
+func (s *Service) GetMyPoints(ctx context.Context, ownerID string) ([]MapPoint, error) {
 	return s.repo.GetMyPoints(ctx, ownerID)
 }
 
-func (s *Service) UpdatePoint(ctx context.Context, userID string, id int, req CreatePointReq) (*GeoPoint, error) {
+func (s *Service) UpdatePoint(ctx context.Context, userID string, id int, req UpdatePointReq) (*MapPoint, error) {
 	existing, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("Titik tidak ditemukan")
@@ -52,11 +58,15 @@ func (s *Service) UpdatePoint(ctx context.Context, userID string, id int, req Cr
 		return nil, errors.New("Anda tidak memiliki izin untuk mengubah titik ini")
 	}
 
-	typeID := req.TypeID
+	categoryID := req.CategoryID
 	tahunBerdiri := req.TahunBerdiri
+	status := req.Status
+	if status == "" {
+		status = existing.Status
+	}
 
-	point := &GeoPoint{
-		TypeID:            &typeID,
+	point := &MapPoint{
+		CategoryID:        &categoryID,
 		Name:              req.Name,
 		Latitude:          req.Latitude,
 		Longitude:         req.Longitude,
@@ -64,6 +74,8 @@ func (s *Service) UpdatePoint(ctx context.Context, userID string, id int, req Cr
 		TahunBerdiri:      &tahunBerdiri,
 		StatusKepemilikan: req.StatusKepemilikan,
 		Description:       req.Description,
+		IsActive:          req.IsActive,
+		Status:            status,
 	}
 
 	if err := s.repo.Update(ctx, id, point); err != nil {

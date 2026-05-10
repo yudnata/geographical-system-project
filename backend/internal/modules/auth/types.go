@@ -14,6 +14,7 @@ type User struct {
 	Institution        *string   `json:"institution"`
 	IsProfileCompleted bool      `json:"is_profile_completed"`
 	HasPassword        bool      `json:"has_password"`
+	Role               string    `json:"role"`
 	CreatedAt          time.Time `json:"created_at"`
 }
 

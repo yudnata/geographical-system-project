@@ -54,7 +54,7 @@ func (h *Handler) GetAll(c fiber.Ctx) error {
 	}
 
 	if points == nil {
-		points = []GeoPoint{}
+		points = []MapPoint{}
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response.Success("Berhasil mendapatkan data peta", points))
@@ -67,7 +67,7 @@ func (h *Handler) Update(c fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error("ID tidak valid"))
 	}
 
-	var input CreatePointReq
+	var input UpdatePointReq
 	if err := c.Bind().Body(&input); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error("Format input tidak valid: " + err.Error()))
 	}
