@@ -3,6 +3,7 @@ package points
 import (
 	"backend/pkg/response"
 	"backend/pkg/upload"
+	"errors"
 	"github.com/gofiber/fiber/v3"
 	"strconv"
 )
@@ -14,6 +15,15 @@ type Handler struct {
 
 func NewHandler(service *Service, uploader *upload.CloudinaryService) *Handler {
 	return &Handler{service: service, uploader: uploader}
+}
+
+func (h *Handler) getIDParam(c fiber.Ctx) (int, error) {
+	idStr := c.Params("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return 0, errors.New("ID tidak valid")
+	}
+	return id, nil
 }
 
 func (h *Handler) Create(c fiber.Ctx) error {
@@ -62,11 +72,21 @@ func (h *Handler) GetAll(c fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(response.Success("Berhasil mendapatkan data peta", points))
 }
 
-func (h *Handler) Update(c fiber.Ctx) error {
-	idStr := c.Params("id")
-	id, err := strconv.Atoi(idStr)
+func (h *Handler) GetPublic(c fiber.Ctx) error {
+	points, err := h.service.GetPublicPoints(c.Context())
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.Error("ID tidak valid"))
+		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal memuat titik peta publik"))
+	}
+	if points == nil {
+		points = []MapPoint{}
+	}
+	return c.JSON(response.Success("Berhasil mendapatkan data peta publik", points))
+}
+
+func (h *Handler) Update(c fiber.Ctx) error {
+	id, err := h.getIDParam(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err.Error()))
 	}
 
 	var input UpdatePointReq
@@ -84,10 +104,9 @@ func (h *Handler) Update(c fiber.Ctx) error {
 }
 
 func (h *Handler) Delete(c fiber.Ctx) error {
-	idStr := c.Params("id")
-	id, err := strconv.Atoi(idStr)
+	id, err := h.getIDParam(c)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.Error("ID tidak valid"))
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err.Error()))
 	}
 
 	userID := c.Locals("userID").(string)
@@ -125,10 +144,11 @@ func (h *Handler) CreateCategory(c fiber.Ctx) error {
 }
 
 func (h *Handler) UpdateCategory(c fiber.Ctx) error {
-	id, err := strconv.Atoi(c.Params("id"))
+	id, err := h.getIDParam(c)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.Error("ID tidak valid"))
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err.Error()))
 	}
+
 	var input struct {
 		Name string `json:"name"`
 		Icon string `json:"icon"`
@@ -144,10 +164,11 @@ func (h *Handler) UpdateCategory(c fiber.Ctx) error {
 }
 
 func (h *Handler) DeleteCategory(c fiber.Ctx) error {
-	id, err := strconv.Atoi(c.Params("id"))
+	id, err := h.getIDParam(c)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.Error("ID tidak valid"))
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err.Error()))
 	}
+
 	if err := h.service.DeleteCategory(id); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal menghapus kategori"))
 	}
@@ -155,11 +176,13 @@ func (h *Handler) DeleteCategory(c fiber.Ctx) error {
 }
 
 func (h *Handler) GetBlog(c fiber.Ctx) error {
-	pointID, err := strconv.Atoi(c.Params("id"))
+	id, err := h.getIDParam(c)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.Error("ID Titik tidak valid"))
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err.Error()))
 	}
-	blog, err := h.service.GetBlog(c.Context(), pointID)
+
+	blog, err := h.service.GetBlog(c.Context(), id)
+
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(response.Error("Blog tidak ditemukan"))
 	}
@@ -167,9 +190,9 @@ func (h *Handler) GetBlog(c fiber.Ctx) error {
 }
 
 func (h *Handler) UpsertBlog(c fiber.Ctx) error {
-	pointID, err := strconv.Atoi(c.Params("id"))
+	id, err := h.getIDParam(c)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.Error("ID Titik tidak valid"))
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err.Error()))
 	}
 
 	var input UpsertBlogReq
@@ -179,7 +202,8 @@ func (h *Handler) UpsertBlog(c fiber.Ctx) error {
 
 	userID := c.Locals("userID").(string)
 	role := c.Locals("role").(string)
-	point, err := h.service.repo.GetByID(c.Context(), pointID)
+	point, err := h.service.repo.GetByID(c.Context(), id)
+
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(response.Error("Titik tidak ditemukan"))
 	}
@@ -187,7 +211,8 @@ func (h *Handler) UpsertBlog(c fiber.Ctx) error {
 		return c.Status(fiber.StatusForbidden).JSON(response.Error("Anda tidak memiliki izin untuk mengulas titik ini"))
 	}
 
-	blog, err := h.service.UpsertBlog(c.Context(), pointID, input)
+	blog, err := h.service.UpsertBlog(c.Context(), id, input)
+
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal menyimpan ulasan: " + err.Error()))
 	}
@@ -224,9 +249,9 @@ func (h *Handler) GetPending(c fiber.Ctx) error {
 }
 
 func (h *Handler) Verify(c fiber.Ctx) error {
-	id, err := strconv.Atoi(c.Params("id"))
+	id, err := h.getIDParam(c)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.Error("ID tidak valid"))
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err.Error()))
 	}
 
 	var req VerifyPointReq
@@ -243,4 +268,18 @@ func (h *Handler) Verify(c fiber.Ctx) error {
 	}
 
 	return c.JSON(response.Success("Data berhasil diverifikasi", nil))
+}
+
+func (h *Handler) GetPublicBlog(c fiber.Ctx) error {
+	id, err := h.getIDParam(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err.Error()))
+	}
+
+	detail, err := h.service.GetBlogDetail(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(response.Error(err.Error()))
+	}
+
+	return c.JSON(response.Success("Berhasil mengambil detail ulasan", detail))
 }

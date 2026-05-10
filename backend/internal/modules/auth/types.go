@@ -5,13 +5,12 @@ import "time"
 type User struct {
 	ID                 string    `json:"id"`
 	Email              string    `json:"email"`
-	Name               string    `json:"name"`
+	FullName           string    `json:"full_name"`
 	Password           string    `json:"-"`
 	SSOProvider        *string   `json:"sso_provider"`
 	SSOID              *string   `json:"sso_id"`
 	AvatarURL          *string   `json:"avatar_url"`
 	Phone              *string   `json:"phone"`
-	Institution        *string   `json:"institution"`
 	IsProfileCompleted bool      `json:"is_profile_completed"`
 	HasPassword        bool      `json:"has_password"`
 	Role               string    `json:"role"`
@@ -19,14 +18,13 @@ type User struct {
 }
 
 type UpdateProfileReq struct {
-	Name        string `json:"name"`
-	Phone       string `json:"phone"`
-	Institution string `json:"institution"`
+	FullName string `json:"full_name"`
+	Phone    string `json:"phone"`
 }
 
 type RegisterReq struct {
 	Email    string `json:"email"`
-	Name     string `json:"name"`
+	FullName string `json:"full_name"`
 	Password string `json:"password"`
 }
 
@@ -37,11 +35,12 @@ type LoginReq struct {
 
 type SSOLoginReq struct {
 	Email       string `json:"email"`
-	Name        string `json:"name"`
+	FullName    string `json:"full_name"`
 	SSOProvider string `json:"sso_provider"`
 	SSOID       string `json:"sso_id"`
 	AvatarURL   string `json:"avatar_url"`
 }
+
 
 type UpdatePasswordReq struct {
 	OldPassword *string `json:"old_password"`

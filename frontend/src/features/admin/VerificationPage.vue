@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useMapPointsStore, type GeoPoint } from '@/stores/mapPoints'
+import { useMapUIStore } from '@/stores/mapUI'
 import { useNotificationStore } from '@/stores/notifications'
 
 const store = useMapPointsStore()
+const uiStore = useMapUIStore()
 const notificationStore = useNotificationStore()
 const pendingPoints = ref<GeoPoint[]>([])
 const isLoading = ref(false)
@@ -34,7 +36,11 @@ const fetchPending = async () => {
   }
 }
 
-onMounted(fetchPending)
+onMounted(async () => {
+  await store.fetchCategories()
+  await fetchPending()
+})
+
 
 const openPreview = async (point: GeoPoint) => {
   selectedPoint.value = point
@@ -89,139 +95,169 @@ const getCategoryName = (id?: number) => {
 </script>
 
 <template>
-  <div class="p-8 space-y-6">
-    <div class="flex items-center justify-between">
-      <div>
-        <h2 class="text-2xl font-bold text-white">Verifikasi Konten</h2>
-        <p class="text-sm text-white/40 mt-1">Tinjau pengajuan dari kontributor sebelum ditayangkan di peta publik.</p>
-      </div>
-      <div class="bg-amber-500/10 px-4 py-2 rounded-xl border border-amber-500/20">
-        <span class="text-amber-500 font-bold text-sm">{{ pendingPoints.length }} Menunggu Verifikasi</span>
-      </div>
-    </div>
-
-    <!-- Loading State -->
-    <div v-if="isLoading" class="flex flex-col items-center justify-center py-20 gap-4">
-      <div class="w-10 h-10 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin"></div>
-      <p class="text-white/40 text-sm font-medium">Memuat pengajuan...</p>
-    </div>
-
-    <!-- Empty State -->
-    <div v-else-if="pendingPoints.length === 0" class="bg-[#161b27] border border-white/5 rounded-2xl p-12 text-center">
-      <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 text-white/20">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </div>
-      <h3 class="text-white font-bold">Semua Bersih!</h3>
-      <p class="text-white/40 text-sm mt-1">Tidak ada pengajuan baru yang perlu diverifikasi.</p>
-    </div>
-
-    <!-- Grid Pengajuan -->
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div v-for="point in pendingPoints" :key="point.id"
-        class="group bg-[#161b27] border border-white/5 rounded-2xl overflow-hidden hover:border-amber-500/30 transition-all flex flex-col shadow-xl shadow-black/20">
-        <!-- Image Preview -->
-        <div class="h-40 bg-slate-800 relative overflow-hidden">
-          <img v-if="point.description" :src="point.description" class="w-full h-full object-cover">
-          <div v-else class="w-full h-full flex items-center justify-center text-white/10 italic text-xs">Tanpa Foto</div>
-          <div class="absolute top-3 left-3 bg-black/60 backdrop-blur px-2 py-1 rounded-md border border-white/10">
-            <span class="text-[10px] font-bold text-white uppercase">{{ getCategoryName(point.type_id) }}</span>
-          </div>
+  <div :class="[
+    'h-full w-full flex flex-col transition-[padding] duration-500 ease-in-out overflow-hidden',
+    uiStore.isSidebarExpanded ? 'pl-[288px]' : 'pl-24',
+    'pt-6 pb-6 pr-6'
+  ]">
+    <div class="flex-1 flex flex-col bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.06)] border border-gray-100 overflow-hidden">
+      <!-- Header -->
+      <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/40 shrink-0">
+        <div>
+          <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">Panel Verifikasi Budaya Bali</h2>
+          <p class="text-xs text-gray-500 mt-1 font-medium">Tinjau pengajuan dari kontributor sebelum ditayangkan.</p>
         </div>
+        <div class="bg-amber-50 px-4 py-1.5 rounded-xl border border-amber-200">
+          <span class="text-amber-600 font-black text-[10px] uppercase tracking-widest">{{ pendingPoints.length }} Menunggu Verifikasi</span>
+        </div>
+      </div>
 
+      <!-- Loading State -->
+      <div v-if="isLoading" class="flex-1 flex flex-col items-center justify-center text-gray-400">
+        <div class="w-10 h-10 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin mb-4"></div>
+        <p class="text-sm font-bold">Memuat pengajuan...</p>
+      </div>
 
-        <div class="p-5 flex-1 flex flex-col gap-4">
-          <div>
-            <h4 class="text-white font-bold text-lg group-hover:text-amber-400 transition-colors">{{ point.name }}</h4>
-            <p class="text-white/40 text-xs mt-1 line-clamp-2">{{ point.address }}</p>
-          </div>
+      <!-- Empty State -->
+      <div v-else-if="pendingPoints.length === 0" class="flex-1 flex flex-col items-center justify-center p-12 text-center">
+        <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-6 text-emerald-500 shadow-inner">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3 class="text-gray-900 font-black text-lg">Semua Bersih!</h3>
+        <p class="text-gray-500 text-sm mt-1 max-w-xs mx-auto font-medium">Tidak ada pengajuan baru yang perlu diverifikasi saat ini.</p>
+      </div>
 
-          <div class="flex items-center gap-3 pt-4 border-t border-white/5">
-            <div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
+      <!-- Grid Pengajuan -->
+      <div v-else class="flex-1 overflow-auto p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div v-for="point in pendingPoints" :key="point.id"
+            class="group bg-white border border-gray-100 rounded-3xl overflow-hidden hover:border-amber-500/30 transition-all duration-500 flex flex-col shadow-xl shadow-gray-200/50 relative">
+            <!-- Image Preview -->
+            <div class="h-44 bg-gray-100 relative overflow-hidden">
+              <img v-if="point.cover_image" :src="point.cover_image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+              <div v-else class="w-full h-full flex items-center justify-center text-gray-300 font-black uppercase text-[10px] tracking-widest">Tanpa Foto</div>
+              <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl border border-gray-100 shadow-sm">
+                <span class="text-[10px] font-black text-primary uppercase tracking-widest">{{ getCategoryName(point.category_id) }}</span>
+              </div>
             </div>
-            <div>
-              <p class="text-white/60 text-xs font-bold">{{ point.owner_name }}</p>
-              <p class="text-[10px] text-white/20 uppercase tracking-widest">{{ new Date(point.created_at || '').toLocaleDateString('id-ID') }}</p>
+
+
+            <div class="p-6 flex-1 flex flex-col">
+              <div class="mb-6">
+                <h4 class="text-gray-900 font-black text-lg leading-tight group-hover:text-primary transition-colors">{{ point.name }}</h4>
+                <p class="text-gray-500 text-xs mt-2 line-clamp-2 font-medium leading-relaxed">{{ point.address }}</p>
+              </div>
+
+              <div class="flex items-center gap-4 pt-5 border-t border-gray-50 mt-auto">
+                <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors duration-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-gray-900 text-xs font-black truncate">{{ point.owner_name }}</p>
+                  <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">{{ new Date(point.created_at || '').toLocaleDateString('id-ID') }}</p>
+                </div>
+              </div>
+
+              <button @click="openPreview(point)"
+                class="mt-6 w-full py-3 bg-gray-900 hover:bg-primary text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all duration-300 shadow-lg shadow-gray-200">
+                Tinjau Detail
+              </button>
             </div>
-
           </div>
-
-          <button @click="openPreview(point)" class="w-full py-2.5 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl transition-all border border-white/10">
-            Tinjau Detail
-          </button>
         </div>
       </div>
     </div>
 
     <!-- Modal Preview -->
-    <div v-if="isPreviewOpen && selectedPoint" class="fixed inset-0 z-[2000] flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="isPreviewOpen = false"></div>
+    <div v-if="isPreviewOpen && selectedPoint" class="fixed inset-0 z-[2000] flex items-center justify-center p-4 lg:p-12">
+      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-md" @click="isPreviewOpen = false"></div>
 
-      <div class="relative bg-[#0f141e] border border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+      <div class="relative bg-white border border-gray-100 rounded-[32px] w-full max-w-6xl max-h-full overflow-hidden flex flex-col shadow-2xl">
         <!-- Header -->
-        <div class="px-8 py-4 border-b border-white/5 flex items-center justify-between shrink-0">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 font-bold">
-              ?
+        <div class="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
             <div>
-              <h3 class="text-white font-bold">Peninjauan Pengajuan</h3>
-              <p class="text-[10px] text-white/40 uppercase tracking-widest">ID: {{ selectedPoint.id }} • Dari: {{ selectedPoint.owner_name }}</p>
+              <h3 class="text-xl font-black text-gray-900 tracking-tight">Peninjauan Pengajuan</h3>
+              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">ID: #{{ selectedPoint.id }} • Kontributor: {{ selectedPoint.owner_name }}</p>
             </div>
           </div>
-          <button @click="isPreviewOpen = false" class="text-white/20 hover:text-white transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          <button @click="isPreviewOpen = false" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 text-gray-400 hover:text-gray-900 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         <!-- Scrollable Content -->
-        <div class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-          <!-- Main Info -->
-          <div class="grid grid-cols-3 gap-8">
-            <div class="col-span-1 space-y-6">
-              <div class="aspect-video rounded-2xl bg-white/5 overflow-hidden border border-white/10">
+        <div class="flex-1 overflow-y-auto p-8 lg:p-12 custom-scrollbar">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <!-- Sidebar Info -->
+            <div class="lg:col-span-4 space-y-10">
+              <div class="aspect-video rounded-3xl bg-gray-100 overflow-hidden shadow-inner border border-gray-100">
                 <img v-if="selectedPoint.description" :src="selectedPoint.description" class="w-full h-full object-cover">
               </div>
-              <div class="space-y-4">
-                <div v-for="info in [
-                  { label: 'Nama', value: selectedPoint.name },
-                  { label: 'Kategori', value: getCategoryName(selectedPoint.type_id) },
-                  { label: 'Lokasi', value: `${selectedPoint.latitude}, ${selectedPoint.longitude}` },
-                  { label: 'Alamat', value: selectedPoint.address }
-                ]" :key="info.label">
 
-                  <p class="text-[10px] font-black text-white/30 uppercase tracking-widest">{{ info.label }}</p>
-                  <p class="text-sm text-white/80 font-bold mt-1">{{ info.value }}</p>
+              <div class="space-y-8">
+                <div v-for="info in [
+                  { label: 'Nama Objek', value: selectedPoint.name, icon: 'M3.75 6h16.5M3.75 12h16.5m-16.5 5.25h16.5' },
+                  { label: 'Kategori', value: getCategoryName(selectedPoint.category_id), icon: 'M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.659A2.25 2.25 0 009.568 3z' },
+
+                  { label: 'Lokasi Spasial', value: `${selectedPoint.latitude}, ${selectedPoint.longitude}`, icon: 'M15 10.5a3 3 0 11-6 0 3 3 0 016 0z' },
+                  { label: 'Alamat Lengkap', value: selectedPoint.address, icon: 'M15 10.5a3 3 0 11-6 0 3 3 0 016 0z' }
+                ]" :key="info.label" class="flex gap-4">
+                  <div class="w-5 h-5 text-primary mt-0.5 shrink-0">
+                    <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-full h-full">
+                      <path stroke-linecap="round" stroke-linejoin="round" :d="info.icon" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ info.label }}</p>
+                    <p class="text-sm text-gray-900 font-bold mt-1.5 leading-relaxed">{{ info.value }}</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="col-span-2 bg-white/5 border border-white/10 rounded-2xl p-6">
-              <p class="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-4">Konten Blog / Artikel</p>
-              <div v-if="blogData" class="space-y-4">
-                <h1 class="text-2xl font-black text-white">{{ blogData.title }}</h1>
-                <div class="prose prose-invert max-w-none text-white/60 text-sm leading-relaxed" v-html="blogData.content"></div>
-              </div>
-              <div v-else class="h-64 flex flex-col items-center justify-center text-white/10">
-                <p class="italic text-sm font-medium">Kontributor belum mengisi konten blog.</p>
+            <!-- Content Area -->
+            <div class="lg:col-span-8">
+              <div class="bg-gray-50/50 rounded-[40px] p-8 lg:p-12 border border-gray-100 min-h-full">
+                <p class="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
+                  <span class="w-8 h-px bg-primary/30"></span>
+                  Artikel / Blog Konten
+                </p>
+                <div v-if="blogData" class="space-y-8">
+                  <h1 class="text-3xl lg:text-4xl font-black text-gray-900 tracking-tight leading-tight">{{ blogData.title }}</h1>
+                  <div class="prose prose-slate max-w-none text-gray-600 leading-relaxed font-medium" v-html="blogData.content"></div>
+                </div>
+                <div v-else class="h-96 flex flex-col items-center justify-center text-gray-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                  <p class="italic text-sm font-bold opacity-50 uppercase tracking-widest">Belum ada konten artikel</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Footer Actions -->
-        <div class="px-8 py-6 border-t border-white/5 bg-white/5 shrink-0 flex items-center justify-end gap-4">
-          <button @click="showRejectModal = true" class="px-6 py-2.5 border border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs font-black uppercase tracking-widest rounded-xl transition-all">
+        <div class="px-8 py-8 border-t border-gray-100 bg-gray-50/50 shrink-0 flex items-center justify-end gap-6">
+          <button @click="showRejectModal = true"
+            class="px-8 py-3.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 text-xs font-black uppercase tracking-widest rounded-2xl transition-all duration-300 shadow-sm">
             Tolak Pengajuan
           </button>
           <button @click="verifyPoint('approved')" :disabled="isProcessing"
-            class="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-900/40 disabled:opacity-50">
+            class="px-10 py-3.5 bg-primary hover:bg-primary-dark text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all duration-300 shadow-xl shadow-primary/30 disabled:opacity-50">
             {{ isProcessing ? 'Memproses...' : 'Setujui & Publikasikan' }}
           </button>
         </div>
@@ -230,16 +266,17 @@ const getCategoryName = (id?: number) => {
 
     <!-- Reject Modal -->
     <div v-if="showRejectModal" class="fixed inset-0 z-[2100] flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/90 backdrop-blur-md" @click="showRejectModal = false"></div>
-      <div class="relative bg-[#161b27] border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl">
-        <h3 class="text-white font-bold text-lg mb-2">Alasan Penolakan</h3>
-        <p class="text-white/40 text-xs mb-4">Berikan catatan mengapa pengajuan ini ditolak agar kontributor dapat memperbaikinya.</p>
-        <textarea v-model="rejectionNote" rows="4" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white text-sm focus:border-red-500/50 outline-none transition-all"
-          placeholder="Tulis alasan di sini..."></textarea>
-        <div class="flex gap-3 mt-6">
-          <button @click="showRejectModal = false" class="flex-1 py-2.5 text-white/40 hover:text-white text-xs font-bold transition-all">Batal</button>
+      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-md" @click="showRejectModal = false"></div>
+      <div class="relative bg-white border border-gray-200 rounded-3xl w-full max-w-md p-8 shadow-2xl">
+        <h3 class="text-xl font-black text-gray-900 mb-2 tracking-tight">Alasan Penolakan</h3>
+        <p class="text-gray-500 text-sm mb-6 font-medium">Berikan catatan perbaikan agar kontributor dapat mengedit ulang data ini.</p>
+        <textarea v-model="rejectionNote" rows="5"
+          class="w-full bg-gray-50 border border-gray-200 rounded-2xl p-5 text-gray-900 text-sm focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all font-medium"
+          placeholder="Tulis alasan penolakan di sini..."></textarea>
+        <div class="flex gap-4 mt-8">
+          <button @click="showRejectModal = false" class="flex-1 py-3 text-gray-400 hover:text-gray-900 text-xs font-black uppercase tracking-widest transition-all">Batal</button>
           <button @click="verifyPoint('rejected')" :disabled="!rejectionNote || isProcessing"
-            class="flex-1 py-2.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl transition-all disabled:opacity-50">
+            class="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-red-600/30 disabled:opacity-50">
             {{ isProcessing ? '...' : 'Konfirmasi Tolak' }}
           </button>
         </div>
@@ -250,7 +287,7 @@ const getCategoryName = (id?: number) => {
 
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -258,11 +295,11 @@ const getCategoryName = (id?: number) => {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
 }
 </style>

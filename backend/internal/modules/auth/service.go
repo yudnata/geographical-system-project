@@ -36,7 +36,7 @@ func (s *Service) Register(input RegisterReq) (*User, error) {
 	user := &User{
 		ID:        uuid.New().String(),
 		Email:     input.Email,
-		Name:      input.Name,
+		FullName:  input.FullName,
 		Password:  string(hash),
 		CreatedAt: time.Now(),
 		Role:      "contributor",
@@ -70,7 +70,7 @@ func (s *Service) SSOLogin(input SSOLoginReq) (string, *User, error) {
 		user = &User{
 			ID:                 uuid.New().String(),
 			Email:              input.Email,
-			Name:               input.Name,
+			FullName:           input.FullName,
 			SSOProvider:        &input.SSOProvider,
 			SSOID:              &input.SSOID,
 			AvatarURL:          &input.AvatarURL,
@@ -91,11 +91,11 @@ func (s *Service) SSOLogin(input SSOLoginReq) (string, *User, error) {
 }
 
 func (s *Service) UpdateProfile(userID string, input UpdateProfileReq) (*User, error) {
-	if input.Name == "" || input.Phone == "" {
+	if input.FullName == "" || input.Phone == "" {
 		return nil, errors.New("Nama dan nomor telp wajib diisi")
 	}
 
-	err := s.repo.UpdateProfile(context.Background(), userID, input.Name, input.Phone, input.Institution)
+	err := s.repo.UpdateProfile(context.Background(), userID, input.FullName, input.Phone)
 	if err != nil {
 		return nil, err
 	}

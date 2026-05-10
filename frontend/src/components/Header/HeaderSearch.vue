@@ -28,7 +28,6 @@ const handleSelectAddress = (addr: NominatimResult) => {
   addressResults.value = []
 }
 
-// Watch search query to fetch real addresses from Nominatim
 watch(() => uiStore.searchQuery, (query) => {
   if (searchTimeout) clearTimeout(searchTimeout)
 
@@ -53,13 +52,13 @@ watch(() => uiStore.searchQuery, (query) => {
 
 <template>
   <div class="flex-1 max-w-sm relative group">
-    <div class="absolute inset-y-0 left-3 flex items-center text-gray-500 group-focus-within:text-primary transition-colors">
+    <div class="absolute inset-y-0 left-3 flex items-center text-gray-400 transition-colors">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
         <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
       </svg>
     </div>
-    <input v-model="uiStore.searchQuery" type="text" placeholder="Cari bangunan atau alamat..."
-      class="w-full h-9 pl-9 pr-4 bg-white border border-gray-300 rounded-xl focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-xs font-semibold text-gray-800 placeholder:text-gray-400 outline-none" />
+    <input v-model="uiStore.searchQuery" type="text" placeholder="Cari objek atau alamat..."
+      class="w-full h-9 pl-9 pr-4 bg-white border border-gray-200 rounded-xl focus:border-gray-400 transition-all text-xs font-semibold text-gray-800 placeholder:text-gray-400 outline-none shadow-sm" />
 
     <!-- Results Dropdown -->
     <div v-if="uiStore.searchQuery && (store.filteredPoints.length > 0 || addressResults.length > 0 || isSearchingAddress)"
@@ -68,7 +67,8 @@ watch(() => uiStore.searchQuery, (query) => {
       <div class="max-h-80 overflow-y-auto">
         <!-- Section: Database Points -->
         <div v-if="store.filteredPoints.length > 0">
-          <h5 class="px-4 py-2 bg-gray-50/50 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-50">Data Bangunan</h5>
+          <h5 class="px-4 py-2 bg-gray-50/50 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-50">Data Objek</h5>
+
           <div v-for="point in store.filteredPoints.slice(0, 5)" :key="point.id" @click="handleSelectPoint(point)"
             class="px-4 py-3 hover:bg-primary/5 cursor-pointer flex items-center gap-3 transition-colors border-b border-gray-50 last:border-0">
             <div class="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">

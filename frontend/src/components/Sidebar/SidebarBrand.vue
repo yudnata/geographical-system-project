@@ -1,21 +1,19 @@
 <script setup lang="ts">
-import { useMapUIStore } from '@/stores/mapUI'
-
-const uiStore = useMapUIStore()
 </script>
 
+
 <template>
-  <div :class="['h-16 flex items-center shrink-0 border-b border-gray-200 whitespace-nowrap box-border transition-[padding] duration-500', uiStore.isSidebarExpanded ? 'px-6' : 'px-4']">
-    <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-        <path fill-rule="evenodd"
-          d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z"
-          clip-rule="evenodd" />
+  <div class="h-20 flex items-center shrink-0 border-b border-gray-100 whitespace-nowrap box-border px-3 gap-3">
+    <div class="w-10 h-10 flex items-center justify-center shrink-0">
+      <!-- Detailed Meru (Pura Bali) Icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" class="w-8 h-8 text-primary">
+        <path d="M16 2l-4 3h8l-4-3zm0 4l-6 4h12l-6-4zm0 5l-8 5h16l-8-5zm0 6l-10 6h20l-10-6zm-3 7h6v3h-6z" />
+        <path d="M4 29h24v1H4z" />
       </svg>
     </div>
-    <div class="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-      <h1 class="text-sm font-extrabold leading-tight text-gray-900 tracking-tight">Geo System</h1>
-      <p class="text-gray-400 text-[10px] font-medium mt-0.5">Sistem Pemetaan</p>
+    <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden">
+      <h1 class="text-[13px] font-black leading-none text-gray-900 tracking-tighter uppercase">Budaya Bali</h1>
+      <p class="text-primary text-[9px] font-black mt-1 uppercase tracking-[0.2em]">Digital Mapping & Blog</p>
     </div>
   </div>
 </template>

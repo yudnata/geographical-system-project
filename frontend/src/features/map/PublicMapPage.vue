@@ -10,6 +10,7 @@ uiStore.filterMyPoints = false
 
 <template>
   <div class="h-full w-full relative">
-    <MapContainer />
+    <MapContainer :is-public="true" />
   </div>
+
 </template>

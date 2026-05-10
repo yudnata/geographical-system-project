@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -14,52 +15,52 @@ func NewRepository(db *pgxpool.Pool) *Repository {
 	return &Repository{db: db}
 }
 
+const userSelectQuery = `
+	SELECT id, email, full_name, password, sso_provider, sso_id, avatar_url, phone, is_profile_completed, role, created_at 
+	FROM users
+`
+
+func (r *Repository) scanUser(row pgx.Row) (*User, error) {
+
+	var u User
+	var pw, ssoProv, ssoId, avatarUrl, phone *string
+	err := row.Scan(&u.ID, &u.Email, &u.FullName, &pw, &ssoProv, &ssoId, &avatarUrl, &phone, &u.IsProfileCompleted, &u.Role, &u.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	if pw != nil {
+		u.Password = *pw
+		u.HasPassword = true
+	}
+	u.SSOProvider = ssoProv
+	u.SSOID = ssoId
+	u.AvatarURL = avatarUrl
+	u.Phone = phone
+
+	return &u, nil
+}
+
 func (r *Repository) Create(ctx context.Context, u *User) error {
 	_, err := r.db.Exec(ctx,
-		`INSERT INTO users (id, email, name, password, sso_provider, sso_id, avatar_url, phone, institution, is_profile_completed, role) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-		u.ID, u.Email, u.Name, nullIfEmpty(u.Password), u.SSOProvider, u.SSOID, u.AvatarURL, nullIfEmptyPtr(u.Phone), nullIfEmptyPtr(u.Institution), u.IsProfileCompleted, u.Role,
+		`INSERT INTO users (id, email, full_name, password, sso_provider, sso_id, avatar_url, phone, is_profile_completed, role) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+		u.ID, u.Email, u.FullName, nullIfEmpty(u.Password), u.SSOProvider, u.SSOID, u.AvatarURL, nullIfEmptyPtr(u.Phone), u.IsProfileCompleted, u.Role,
 	)
 	return err
 }
 
 func (r *Repository) FindByEmail(ctx context.Context, email string) (*User, error) {
-	var u User
-	var pw, ssoProv, ssoId, avatarUrl, phone, institution *string
-	err := r.db.QueryRow(ctx, `SELECT id, email, name, password, sso_provider, sso_id, avatar_url, phone, institution, is_profile_completed, role, created_at FROM users WHERE email = $1`, email).
-		Scan(&u.ID, &u.Email, &u.Name, &pw, &ssoProv, &ssoId, &avatarUrl, &phone, &institution, &u.IsProfileCompleted, &u.Role, &u.CreatedAt)
-
-	if pw != nil {
-		u.Password = *pw
-	}
-	u.SSOProvider = ssoProv
-	u.SSOID = ssoId
-	u.AvatarURL = avatarUrl
-	u.Phone = phone
-	u.Institution = institution
-
-	return &u, err
+	row := r.db.QueryRow(ctx, userSelectQuery+" WHERE email = $1", email)
+	return r.scanUser(row)
 }
 
 func (r *Repository) FindByID(ctx context.Context, id string) (*User, error) {
-	var u User
-	var pw, ssoProv, ssoId, avatarUrl, phone, institution *string
-	err := r.db.QueryRow(ctx, `SELECT id, email, name, password, sso_provider, sso_id, avatar_url, phone, institution, is_profile_completed, role, created_at FROM users WHERE id = $1`, id).
-		Scan(&u.ID, &u.Email, &u.Name, &pw, &ssoProv, &ssoId, &avatarUrl, &phone, &institution, &u.IsProfileCompleted, &u.Role, &u.CreatedAt)
-
-	if pw != nil {
-		u.Password = *pw
-	}
-	u.SSOProvider = ssoProv
-	u.SSOID = ssoId
-	u.AvatarURL = avatarUrl
-	u.Phone = phone
-	u.Institution = institution
-
-	return &u, err
+	row := r.db.QueryRow(ctx, userSelectQuery+" WHERE id = $1", id)
+	return r.scanUser(row)
 }
 
 func (r *Repository) FindAllUsers(ctx context.Context) ([]User, error) {
-	rows, err := r.db.Query(ctx, `SELECT id, email, name, sso_provider, avatar_url, phone, institution, is_profile_completed, role, created_at FROM users ORDER BY created_at DESC`)
+	rows, err := r.db.Query(ctx, `SELECT id, email, full_name, sso_provider, avatar_url, phone, is_profile_completed, role, created_at FROM users ORDER BY created_at DESC`)
 	if err != nil {
 		return nil, err
 	}
@@ -68,14 +69,13 @@ func (r *Repository) FindAllUsers(ctx context.Context) ([]User, error) {
 	var users []User
 	for rows.Next() {
 		var u User
-		var ssoProv, avatarUrl, phone, institution *string
-		if err := rows.Scan(&u.ID, &u.Email, &u.Name, &ssoProv, &avatarUrl, &phone, &institution, &u.IsProfileCompleted, &u.Role, &u.CreatedAt); err != nil {
+		var ssoProv, avatarUrl, phone *string
+		if err := rows.Scan(&u.ID, &u.Email, &u.FullName, &ssoProv, &avatarUrl, &phone, &u.IsProfileCompleted, &u.Role, &u.CreatedAt); err != nil {
 			return nil, err
 		}
 		u.SSOProvider = ssoProv
 		u.AvatarURL = avatarUrl
 		u.Phone = phone
-		u.Institution = institution
 		users = append(users, u)
 	}
 	return users, nil
@@ -86,8 +86,8 @@ func (r *Repository) UpdateSSO(ctx context.Context, id, provider, ssoId, avatarU
 	return err
 }
 
-func (r *Repository) UpdateProfile(ctx context.Context, id, name, phone, institution string) error {
-	_, err := r.db.Exec(ctx, `UPDATE users SET name=$1, phone=$2, institution=$3, is_profile_completed=true WHERE id=$4`, name, phone, institution, id)
+func (r *Repository) UpdateProfile(ctx context.Context, id, fullName, phone string) error {
+	_, err := r.db.Exec(ctx, `UPDATE users SET full_name=$1, phone=$2, is_profile_completed=true WHERE id=$3`, fullName, phone, id)
 	return err
 }
 

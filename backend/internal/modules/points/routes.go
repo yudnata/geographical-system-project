@@ -6,6 +6,8 @@ import (
 )
 
 func RegisterRoutes(router fiber.Router, h *Handler, authMiddleware fiber.Handler) {
+	router.Get("/public/map-points", h.GetPublic)
+	router.Get("/public/blogs/:id", h.GetPublicBlog)
 	pts := router.Group("/points")
 	pts.Post("/", authMiddleware, h.Create)
 	pts.Put("/:id", authMiddleware, h.Update)
@@ -14,7 +16,6 @@ func RegisterRoutes(router fiber.Router, h *Handler, authMiddleware fiber.Handle
 	pts.Get("/", h.GetAll)
 	pts.Get("/pending", authMiddleware, middleware.RequireRole("admin"), h.GetPending)
 	pts.Post("/:id/verify", authMiddleware, middleware.RequireRole("admin"), h.Verify)
-
 
 	pts.Get("/:id/blog", h.GetBlog)
 	pts.Put("/:id/blog", authMiddleware, h.UpsertBlog)

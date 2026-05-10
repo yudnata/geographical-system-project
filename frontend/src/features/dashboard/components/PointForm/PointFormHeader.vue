@@ -12,8 +12,9 @@ const store = useMapPointsStore()
   <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0 bg-gray-50/50">
     <div>
       <h3 class="text-lg font-black text-gray-800 tracking-tight">
-        {{ isEdit ? 'Update Data Bangunan' : 'Registrasi Bangunan Baru' }}
+        {{ isEdit ? 'Update Data Objek' : 'Registrasi Objek Baru' }}
       </h3>
+
       <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Geo Information System</p>
     </div>
     <button @click="store.closeModal()" class="text-gray-400 hover:text-red-500 transition-all p-2 rounded-xl hover:bg-red-50 active:scale-90">

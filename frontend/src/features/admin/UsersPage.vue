@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useMapUIStore } from '@/stores/mapUI'
 import { useNotificationStore } from '@/stores/notifications'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 const authStore = useAuthStore()
+const uiStore = useMapUIStore()
 const notify = useNotificationStore()
 
 interface User {
   id: string
-  name: string
+  full_name: string
   email: string
   role: string
   avatar_url?: string
   phone?: string
-  institution?: string
   is_profile_completed: boolean
   created_at: string
 }
@@ -27,9 +28,10 @@ const filteredUsers = computed(() => {
   const q = searchQuery.value.toLowerCase()
   if (!q) return users.value
   return users.value.filter(u =>
-    u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+    u.full_name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
   )
 })
+
 
 const fetchUsers = async () => {
   isLoading.value = true
@@ -48,8 +50,8 @@ const fetchUsers = async () => {
 }
 
 const roleBadge = (role: string) => {
-  if (role === 'admin') return 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-  return 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+  if (role === 'admin') return 'bg-amber-100 text-amber-700 border-amber-200'
+  return 'bg-blue-100 text-blue-700 border-blue-200'
 }
 
 const formatDate = (dateStr: string) => {
@@ -61,76 +63,83 @@ onMounted(fetchUsers)
 
 
 <template>
-  <div class="p-8 min-h-screen bg-[#0f1117]">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-2xl font-bold text-white">Manajemen Pengguna</h1>
-        <p class="text-white/40 text-sm mt-1">Daftar seluruh akun yang terdaftar di sistem</p>
+  <div :class="[
+    'h-full w-full flex flex-col transition-[padding] duration-500 ease-in-out overflow-hidden',
+    uiStore.isSidebarExpanded ? 'pl-[288px]' : 'pl-24',
+    'pt-6 pb-6 pr-6'
+  ]">
+    <div class="flex-1 flex flex-col bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.06)] border border-gray-100 overflow-hidden">
+      <!-- Header -->
+      <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/40">
+        <div>
+          <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">Manajemen Tim Kontributor</h2>
+
+          <p class="text-xs text-gray-500 mt-1 font-medium">Daftar seluruh akun yang terdaftar di sistem.</p>
+        </div>
+        <div class="flex items-center gap-6">
+          <div class="text-right">
+            <p class="text-xl font-black text-gray-900 leading-none">{{ users.length }}</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Total Pengguna</p>
+          </div>
+          <div class="h-8 w-px bg-gray-200"></div>
+          <div class="relative group">
+            <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 group-focus-within:text-primary transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+              </svg>
+            </span>
+            <input v-model="searchQuery" type="text" placeholder="Cari nama atau email..."
+              class="pl-9 pr-4 py-2 w-64 bg-white border border-gray-200 rounded-xl focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-xs font-bold shadow-sm" />
+          </div>
+        </div>
       </div>
-      <div class="text-right">
-        <p class="text-2xl font-bold text-white">{{ users.length }}</p>
-        <p class="text-white/30 text-xs">Total Pengguna</p>
+
+      <!-- Loading -->
+      <div v-if="isLoading" class="flex-1 flex flex-col items-center justify-center text-gray-400">
+        <div class="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
+        <p class="text-sm font-bold">Memuat data pengguna...</p>
       </div>
-    </div>
 
-    <!-- Search -->
-    <div class="relative mb-6">
-      <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-      </svg>
-      <input v-model="searchQuery" type="text" placeholder="Cari nama atau email..."
-        class="w-full bg-[#161b27] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-amber-500/50 transition-colors" />
-    </div>
-
-    <!-- Loading -->
-    <div v-if="isLoading" class="flex items-center justify-center py-20 text-white/40">
-      <svg class="animate-spin w-6 h-6 mr-3" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-      </svg>
-      Memuat pengguna...
-    </div>
-
-    <!-- Table -->
-    <div v-else class="bg-[#161b27] border border-white/5 rounded-2xl overflow-hidden">
-      <table class="w-full">
-        <thead>
-          <tr class="border-b border-white/5">
-            <th class="text-left px-5 py-3.5 text-xs font-semibold text-white/30 uppercase tracking-wider">Pengguna</th>
-            <th class="text-left px-5 py-3.5 text-xs font-semibold text-white/30 uppercase tracking-wider">Email</th>
-            <th class="text-left px-5 py-3.5 text-xs font-semibold text-white/30 uppercase tracking-wider">Peran</th>
-            <th class="text-left px-5 py-3.5 text-xs font-semibold text-white/30 uppercase tracking-wider">Institusi</th>
-            <th class="text-left px-5 py-3.5 text-xs font-semibold text-white/30 uppercase tracking-wider">Bergabung</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-white/5">
-          <tr v-if="filteredUsers.length === 0">
-            <td colspan="5" class="text-center py-12 text-white/30 text-sm">Tidak ada pengguna ditemukan</td>
-          </tr>
-          <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-white/2 transition-colors">
-            <td class="px-5 py-4">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-                  {{ user.name?.charAt(0).toUpperCase() || '?' }}
+      <!-- Table -->
+      <div v-else class="flex-1 overflow-auto">
+        <table class="w-full text-left border-collapse min-w-max">
+          <thead class="bg-gray-50 sticky top-0 shadow-sm outline outline-1 outline-gray-200 z-10">
+            <tr>
+              <th class="py-3.5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Pengguna</th>
+              <th class="py-3.5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Email</th>
+              <th class="py-3.5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Peran</th>
+              <th class="py-3.5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Bergabung</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr v-if="filteredUsers.length === 0">
+              <td colspan="4" class="py-12 text-center text-gray-400 text-sm italic font-medium">Tidak ada pengguna ditemukan.</td>
+            </tr>
+            <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-blue-50/40 transition-colors group">
+              <td class="py-4 px-6">
+                <div class="flex items-center gap-4">
+                  <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-xs font-black text-white shadow-lg shadow-primary/20 flex-shrink-0">
+                    {{ user.full_name?.charAt(0).toUpperCase() || '?' }}
+                  </div>
+                  <div>
+                    <p class="text-sm font-black text-gray-900 tracking-tight">{{ user.full_name }}</p>
+                    <p v-if="!user.is_profile_completed" class="text-[10px] text-amber-600 font-bold uppercase tracking-widest mt-0.5">Profil belum lengkap</p>
+                    <p v-else class="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mt-0.5">Profil lengkap</p>
+                  </div>
                 </div>
-                <div>
-                  <p class="text-sm font-medium text-white">{{ user.name }}</p>
-                  <p v-if="!user.is_profile_completed" class="text-[10px] text-yellow-500/70">Profil belum lengkap</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-5 py-4 text-sm text-white/50">{{ user.email }}</td>
-            <td class="px-5 py-4">
-              <span :class="['text-[11px] font-semibold px-2.5 py-1 rounded-full border capitalize', roleBadge(user.role)]">
-                {{ user.role }}
-              </span>
-            </td>
-            <td class="px-5 py-4 text-sm text-white/50">{{ user.institution || '-' }}</td>
-            <td class="px-5 py-4 text-sm text-white/40">{{ formatDate(user.created_at) }}</td>
-          </tr>
-        </tbody>
-      </table>
+              </td>
+              <td class="py-4 px-6 text-sm text-gray-600 font-medium">{{ user.email }}</td>
+              <td class="py-4 px-6">
+                <span :class="['text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-wider', roleBadge(user.role)]">
+                  {{ user.role }}
+                </span>
+              </td>
+              <td class="py-4 px-6 text-xs text-gray-400 font-bold uppercase tracking-tighter">{{ formatDate(user.created_at) }}</td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>

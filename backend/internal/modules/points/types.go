@@ -9,22 +9,21 @@ type Category struct {
 }
 
 type MapPoint struct {
-	ID                int       `json:"id"`
-	CategoryID        *int      `json:"category_id"`
-	Name              string    `json:"name"`
-	Latitude          float64   `json:"latitude"`
-	Longitude         float64   `json:"longitude"`
-	Address           string    `json:"address"`
-	OwnerID           string    `json:"owner_id"`
-	OwnerName         string    `json:"owner_name"`
-	TahunBerdiri      *int      `json:"tahun_berdiri"`
-	StatusKepemilikan string    `json:"status_kepemilikan"`
-	Description       string    `json:"description"`
-	IsActive          bool      `json:"is_active"`
-	Status            string    `json:"status"`
-	RejectionNote     *string   `json:"rejection_note"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
+	ID            int       `json:"id"`
+	CategoryID    *int      `json:"category_id"`
+	Name          string    `json:"name"`
+	Latitude      float64   `json:"latitude"`
+	Longitude     float64   `json:"longitude"`
+	Address       string    `json:"address"`
+	OwnerID       string    `json:"owner_id"`
+	OwnerName     string    `json:"owner_name"`
+	TahunBerdiri  *string   `json:"tahun_berdiri"`
+	Description   string    `json:"description"`
+	CoverImage    *string   `json:"cover_image"`
+	Status        string    `json:"status"`
+	RejectionNote *string   `json:"rejection_note"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 type Blog struct {
@@ -38,28 +37,27 @@ type Blog struct {
 }
 
 type CreatePointReq struct {
-	CategoryID        int     `json:"category_id"`
-	Name              string  `json:"name"`
-	Latitude          float64 `json:"latitude"`
-	Longitude         float64 `json:"longitude"`
-	Address           string  `json:"address"`
-	TahunBerdiri      int     `json:"tahun_berdiri"`
-	StatusKepemilikan string  `json:"status_kepemilikan"`
-	Description       string  `json:"description"`
-	Status            string  `json:"status"` // draft or pending
+	CategoryID   int     `json:"category_id"`
+	Name         string  `json:"name"`
+	Latitude     float64 `json:"latitude"`
+	Longitude    float64 `json:"longitude"`
+	Address      string  `json:"address"`
+	TahunBerdiri string  `json:"tahun_berdiri"`
+	Description  string  `json:"description"`
+	CoverImage   string  `json:"cover_image"`
+	Status       string  `json:"status"` // draft or pending
 }
 
 type UpdatePointReq struct {
-	CategoryID        int     `json:"category_id"`
-	Name              string  `json:"name"`
-	Latitude          float64 `json:"latitude"`
-	Longitude         float64 `json:"longitude"`
-	Address           string  `json:"address"`
-	TahunBerdiri      int     `json:"tahun_berdiri"`
-	StatusKepemilikan string  `json:"status_kepemilikan"`
-	Description       string  `json:"description"`
-	IsActive          bool    `json:"is_active"`
-	Status            string  `json:"status"` // draft or pending
+	CategoryID   int     `json:"category_id"`
+	Name         string  `json:"name"`
+	Latitude     float64 `json:"latitude"`
+	Longitude    float64 `json:"longitude"`
+	Address      string  `json:"address"`
+	TahunBerdiri string  `json:"tahun_berdiri"`
+	Description  string  `json:"description"`
+	CoverImage   string  `json:"cover_image"`
+	Status       string  `json:"status"` // draft or pending
 }
 
 type UpsertBlogReq struct {
@@ -73,3 +71,7 @@ type VerifyPointReq struct {
 	RejectionNote string `json:"rejection_note"`
 }
 
+type BlogDetailResp struct {
+	Blog  *Blog     `json:"blog"`
+	Point *MapPoint `json:"point"`
+}

@@ -14,7 +14,8 @@ watch(() => authStore.user, () => {
   <div class="flex items-center gap-2">
     <div v-if="authStore.user" class="flex items-center gap-3 px-3 py-1.5 rounded-full hover:bg-gray-50 transition-colors cursor-pointer border border-transparent hover:border-gray-100">
       <div class="text-right hidden sm:block">
-        <p class="text-xs font-bold text-gray-900 leading-tight">{{ authStore.user.name }}</p>
+        <p class="text-xs font-bold text-gray-900 leading-tight">{{ authStore.user.full_name }}</p>
+
         <p class="text-[10px] text-gray-400 font-medium">{{ authStore.user.email || 'Administrator' }}</p>
       </div>
 

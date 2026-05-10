@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useMapUIStore } from '@/stores/mapUI'
 import { useNotificationStore } from '@/stores/notifications'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 const authStore = useAuthStore()
+const uiStore = useMapUIStore()
 const notify = useNotificationStore()
+
 
 interface Category {
   id: number
@@ -14,6 +17,7 @@ interface Category {
 }
 
 const categories = ref<Category[]>([])
+const searchQuery = ref('')
 const isLoading = ref(false)
 const isSubmitting = ref(false)
 const showForm = ref(false)
@@ -21,6 +25,13 @@ const isEditing = ref(false)
 const deleteConfirmId = ref<number | null>(null)
 
 const form = ref({ id: 0, name: '', icon: '' })
+
+const filteredCategories = computed(() => {
+  if (!searchQuery.value) return categories.value
+  return categories.value.filter(c =>
+    c.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+})
 
 const iconOptions = [
   { label: 'Temple (Pura)', value: 'temple' },
@@ -35,10 +46,21 @@ const iconOptions = [
   { label: 'Market (Pasar Seni)', value: 'market' },
 ]
 
-const iconEmoji: Record<string, string> = {
-  temple: '🛕', waterfall: '🌊', beach: '🏖️', mountain: '⛰️',
-  hill: '🌄', lake: '🏞️', forest: '🌲', village: '🏘️',
-  museum: '🏛️', market: '🎨',
+const ICON_MAP: Record<string, string> = {
+  'temple': 'M12 2l-4 3h8l-4-3zm0 4l-6 4h12l-6-4zm0 5l-8 6h16l-8-6zm-2 6h4v5h-4z',
+  'waterfall': 'M12 2v16M9 6c-2 0-3 1-3 3v13M15 6c2 0 3 1 3 3v13M12 22v-2',
+  'beach': 'M12 10a4 4 0 100-8 4 4 0 000 8z M2 17c2 0 3-1 5-1s3 1 5 1 3-1 5-1 3 1 5 1 M2 21c2 0 3-1 5-1s3 1 5 1 3-1 5-1 3 1 5 1',
+  'mountain': 'M3 20l9-16 9 16H3z M8 11l4-3 4 3',
+  'hill': 'M2 20c4-6 10-6 14 0 M12 20c4-4 8-4 10 0',
+  'lake': 'M12 21c-5 0-9-2-9-5s4-5 9-5 9 2 9 5-4 5-9 5z M12 17a3 3 0 110-6 3 3 0 010 6z',
+  'forest': 'M12 2l3 5H9l3-5zm0 6l4 7H8l4-7zm0 7v5',
+  'village': 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z',
+  'museum': 'M4 22V10h16v12M2 10l10-8 10 8M9 14v4M15 14v4',
+  'market': 'M3 3h18v2H3V3zm3 4v14h12V7H6zM10 7v14M14 7v14'
+}
+
+const getIconPath = (iconName?: string) => {
+  return ICON_MAP[iconName || ''] || 'M12 2v20M2 12h20'
 }
 
 const fetchCategories = async () => {
@@ -53,6 +75,7 @@ const fetchCategories = async () => {
     isLoading.value = false
   }
 }
+
 
 const openCreate = () => {
   form.value = { id: 0, name: '', icon: iconOptions[0]?.value ?? 'temple' }
@@ -119,94 +142,125 @@ onMounted(fetchCategories)
 </script>
 
 <template>
-  <div class="p-8 min-h-screen bg-[#0f1117]">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-2xl font-bold text-white">Manajemen Kategori</h1>
-        <p class="text-white/40 text-sm mt-1">Kelola kategori objek yang tampil di peta interaktif</p>
-      </div>
-      <button @click="openCreate" class="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-white font-semibold rounded-xl text-sm transition-all active:scale-95">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
-        Tambah Kategori
-      </button>
-    </div>
+  <div :class="[
+    'h-full w-full flex flex-col transition-[padding] duration-500 ease-in-out overflow-hidden',
+    uiStore.isSidebarExpanded ? 'pl-[288px]' : 'pl-24',
+    'pt-6 pb-6 pr-6'
+  ]">
+    <div class="flex-1 flex flex-col bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.06)] border border-gray-100 overflow-hidden">
+      <!-- Header -->
+      <div class="px-6 py-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between bg-gray-50/40 gap-4">
+        <div>
+          <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">Kategori Objek</h2>
+          <p class="text-xs text-gray-500 mt-1 font-medium">Kelola kategori dan ikon visual untuk pemetaan.</p>
+        </div>
 
-    <!-- Loading -->
-    <div v-if="isLoading" class="flex items-center justify-center py-20 text-white/40">
-      <svg class="animate-spin w-6 h-6 mr-3" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-      </svg>
-      Memuat kategori...
-    </div>
+        <div class="flex items-center gap-3">
+          <!-- Search Bar Modern -->
+          <div class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input v-model="searchQuery" type="text" placeholder="Cari kategori..."
+              class="h-10 pl-10 pr-4 w-full md:w-64 bg-transparent border border-gray-100 rounded-xl text-xs font-bold text-gray-700 placeholder-gray-400 focus:outline-none focus:border-gray-200 transition-all" />
 
-    <!-- Category Grid -->
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      <div v-for="cat in categories" :key="cat.id" class="group bg-[#161b27] border border-white/5 rounded-2xl p-5 hover:border-amber-500/30 transition-all">
-        <div class="flex items-start justify-between mb-4">
-          <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-2xl">
-            {{ iconEmoji[cat.icon] || '📍' }}
           </div>
-          <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button @click="openEdit(cat)" class="p-1.5 rounded-lg text-white/40 hover:text-amber-400 hover:bg-amber-500/10 transition-all" title="Edit">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
+
+          <button @click="openCreate"
+            class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl text-xs transition-all active:scale-95 shadow-lg shadow-primary/20 shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <span class="hidden sm:inline">Tambah Kategori</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div v-if="isLoading" class="flex-1 flex flex-col items-center justify-center text-gray-400">
+        <div class="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
+        <p class="text-sm font-bold">Memuat kategori...</p>
+      </div>
+
+      <!-- Category Grid -->
+      <div v-else class="flex-1 overflow-auto p-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div v-for="cat in filteredCategories" :key="cat.id" class="group bg-white border border-gray-50 rounded-2xl p-5 hover:bg-gray-50/50 transition-all duration-300 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+
+              <button @click="openEdit(cat)" class="p-2 rounded-xl bg-gray-50 text-gray-400 hover:text-primary hover:bg-primary/10 transition-all" title="Edit">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
+                </svg>
+              </button>
+              <button @click="deleteConfirmId = cat.id" class="p-2 rounded-xl bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all" title="Hapus">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                </svg>
+              </button>
+            </div>
+
+            <div class="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center p-3 mb-4 group-hover:scale-110 transition-transform duration-500 shadow-inner">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
+                <path :d="getIconPath(cat.icon)" />
               </svg>
-            </button>
-            <button @click="deleteConfirmId = cat.id" class="p-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all" title="Hapus">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-              </svg>
-            </button>
+            </div>
+            <h3 class="font-black text-gray-900 text-sm uppercase tracking-tight">{{ cat.name }}</h3>
+            <p class="text-[10px] text-gray-400 mt-1 font-bold uppercase tracking-widest">Icon: {{ cat.icon }}</p>
           </div>
         </div>
-        <h3 class="font-semibold text-white text-sm">{{ cat.name }}</h3>
-        <p class="text-white/30 text-xs mt-0.5 font-mono">icon: {{ cat.icon }}</p>
       </div>
     </div>
+
 
     <!-- Form Modal -->
     <Transition name="modal-fade">
       <div v-if="showForm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="showForm = false"></div>
-        <div class="relative bg-[#161b27] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md p-6">
-          <h2 class="text-lg font-bold text-white mb-5">
+        <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="showForm = false"></div>
+        <div class="relative bg-white/90 backdrop-blur-2xl border border-white rounded-3xl shadow-2xl w-full max-w-md p-8">
+          <h2 class="text-xl font-black text-gray-900 mb-6 tracking-tight">
             {{ isEditing ? 'Edit Kategori' : 'Tambah Kategori Baru' }}
           </h2>
 
-          <div class="space-y-4">
+          <div class="space-y-6">
             <div>
-              <label class="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5">Nama Kategori</label>
+              <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Nama Kategori</label>
               <input v-model="form.name" type="text" placeholder="Contoh: Pura"
-                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-amber-500/50 transition-colors"
+                class="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3 text-sm text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold"
                 @keyup.enter="submitForm" />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5">Icon</label>
-              <select v-model="form.icon" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500/50 transition-colors">
-                <option v-for="opt in iconOptions" :key="opt.value" :value="opt.value" class="bg-[#161b27]">
-                  {{ iconEmoji[opt.value] }} {{ opt.label }}
-                </option>
-              </select>
+              <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Icon Visual</label>
+              <div class="grid grid-cols-5 gap-3">
+                <button v-for="opt in iconOptions" :key="opt.value" @click="form.icon = opt.value" :class="[
+                  'h-12 rounded-xl flex items-center justify-center p-2.5 transition-all border-2',
+                  form.icon === opt.value
+                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-105'
+                    : 'bg-gray-50 text-gray-400 border-transparent hover:bg-gray-100'
+                ]" :title="opt.label">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
+                    <path :d="getIconPath(opt.value)" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
 
-          <div class="flex gap-3 mt-6">
-            <button @click="showForm = false" class="flex-1 py-2.5 rounded-xl border border-white/10 text-white/60 hover:text-white hover:bg-white/5 text-sm font-medium transition-all">
+          <div class="flex gap-4 mt-8">
+            <button @click="showForm = false" class="flex-1 py-3.5 rounded-2xl border border-gray-100 text-gray-400 hover:bg-gray-50 text-xs font-black uppercase tracking-widest transition-all">
               Batal
             </button>
             <button @click="submitForm" :disabled="isSubmitting"
-              class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-white text-sm font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+              class="flex-1 py-3.5 rounded-2xl bg-primary hover:bg-primary-dark text-white text-xs font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
               <svg v-if="isSubmitting" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
               </svg>
-              {{ isEditing ? 'Simpan Perubahan' : 'Tambahkan' }}
+              {{ isEditing ? 'Simpan' : 'Tambahkan' }}
             </button>
           </div>
         </div>
@@ -216,19 +270,21 @@ onMounted(fetchCategories)
     <!-- Delete Confirmation Modal -->
     <Transition name="modal-fade">
       <div v-if="deleteConfirmId !== null" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="deleteConfirmId = null"></div>
-        <div class="relative bg-[#161b27] border border-red-500/20 rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
-          <div class="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="deleteConfirmId = null"></div>
+        <div class="relative bg-white/90 backdrop-blur-2xl border border-red-100 rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center">
+          <div class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
             </svg>
           </div>
-          <h3 class="text-white font-bold mb-2">Hapus Kategori?</h3>
-          <p class="text-white/40 text-sm mb-6">Tindakan ini tidak dapat dibatalkan. Pastikan tidak ada objek peta yang menggunakan kategori ini.</p>
-          <div class="flex gap-3">
-            <button @click="deleteConfirmId = null" class="flex-1 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm font-medium hover:bg-white/5 transition-all">Batal</button>
-            <button @click="deleteCategory(deleteConfirmId!)" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-400 text-white text-sm font-semibold transition-all">Hapus</button>
+          <h3 class="text-xl font-black text-gray-900 mb-2 tracking-tight">Hapus Kategori?</h3>
+          <p class="text-gray-400 text-sm mb-8 font-medium">Tindakan ini tidak dapat dibatalkan. Pastikan tidak ada objek yang menggunakan kategori ini.</p>
+          <div class="flex gap-4">
+            <button @click="deleteConfirmId = null"
+              class="flex-1 py-3.5 rounded-2xl border border-gray-100 text-gray-400 text-xs font-black uppercase tracking-widest hover:bg-gray-50 transition-all">Batal</button>
+            <button @click="deleteCategory(deleteConfirmId!)"
+              class="flex-1 py-3.5 rounded-2xl bg-red-500 hover:bg-red-600 text-white text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-red-200">Hapus</button>
           </div>
         </div>
       </div>

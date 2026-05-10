@@ -11,14 +11,13 @@ export interface GeoPoint {
   name: string
   latitude: number
   longitude: number
-  type_id: number
+  category_id: number
   address?: string
-  tahun_berdiri?: number
-  status_kepemilikan?: string
+  tahun_berdiri?: string
   description?: string
+  cover_image?: string
   owner_id?: string
   owner_name?: string
-  is_active?: boolean
   status?: 'draft' | 'pending' | 'approved' | 'rejected'
   rejection_note?: string
   created_at?: string
@@ -46,13 +45,26 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
 
   const notificationStore = useNotificationStore()
 
-  const fetchPoints = async () => {
+  const fetchPoints = async (isPublic = false, isMe = false) => {
+    let url = `${API_URL}/points`
+    if (isPublic) url = `${API_URL}/public/map-points`
+    else if (isMe) url = `${API_URL}/points/me`
+
     try {
-      const res = await fetch(`${API_URL}/points`)
+      const authStore = useAuthStore()
+      const headers: Record<string, string> = {}
+      if (!isPublic && authStore.token) {
+        headers['Authorization'] = `Bearer ${authStore.token}`
+      }
+
+      const res = await fetch(url, { headers })
       const json = await res.json()
       if (json.success) points.value = json.data
     } catch {
-      notificationStore.error('Gagal mengambil data bangunan')
+      let msg = 'Gagal mengambil data bangunan'
+      if (isPublic) msg = 'Gagal mengambil data publik'
+      if (isMe) msg = 'Gagal mengambil data kontribusi Anda'
+      notificationStore.error(msg)
     }
   }
 
@@ -85,7 +97,8 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
       const json = await res.json()
       if (json.success) {
         const savedPoint = json.data
-        if (!savedPoint.owner_name && authStore.user) savedPoint.owner_name = authStore.user.name
+        if (!savedPoint.owner_name && authStore.user)
+          savedPoint.owner_name = authStore.user.full_name
 
         if (isEdit) {
           const index = points.value.findIndex((p) => p.id === pointData.id)
@@ -159,7 +172,6 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
       const json = await res.json()
       if (json.success) return json.data
     } catch {
-      // It's okay if blog is not found
     }
     return null
   }
@@ -190,7 +202,7 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
       const matchSearch =
         point.name.toLowerCase().includes(uiStore.searchQuery.toLowerCase()) ||
         (point.address && point.address.toLowerCase().includes(uiStore.searchQuery.toLowerCase()))
-      const matchType = !uiStore.filterTypeId || point.type_id === uiStore.filterTypeId
+      const matchType = !uiStore.filterTypeId || point.category_id === uiStore.filterTypeId
       const matchOwner = !uiStore.filterMyPoints || point.owner_id === authStore.user?.id
 
       return matchSearch && matchType && matchOwner
@@ -206,6 +218,7 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
     filteredPoints,
     fetchPoints,
     fetchCategories,
+
     savePoint,
     deletePoint,
     saveBlog,

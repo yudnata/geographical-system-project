@@ -1,8 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import MainLayout from '@/layouts/MainLayout.vue'
-import AdminLayout from '@/layouts/AdminLayout.vue'
-import ContributorLayout from '@/layouts/ContributorLayout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,49 +33,40 @@ const router = createRouter({
           component: () => import('@/features/dashboard/TabularPage.vue'),
           meta: { requiresAuth: true },
         },
-      ],
-    },
-    // Admin pages - wrapped inside AdminLayout
-    {
-      path: '/admin',
-      component: AdminLayout,
-      meta: { requiresAuth: true, requiresAdmin: true },
-      children: [
         {
-          path: 'categories',
+          path: 'blog/:id',
+          name: 'blog-detail',
+          component: () => import('@/features/blog/BlogDetailPage.vue'),
+        },
+        // Admin Features
+        {
+          path: 'admin/categories',
           name: 'admin-categories',
           component: () => import('@/features/admin/CategoriesPage.vue'),
+          meta: { requiresAuth: true, requiresAdmin: true },
         },
         {
-          path: 'users',
+          path: 'admin/users',
           name: 'admin-users',
           component: () => import('@/features/admin/UsersPage.vue'),
+          meta: { requiresAuth: true, requiresAdmin: true },
         },
         {
-          path: 'verification',
+          path: 'admin/verification',
           name: 'admin-verification',
           component: () => import('@/features/admin/VerificationPage.vue'),
+          meta: { requiresAuth: true, requiresAdmin: true },
         },
-      ],
-    },
-    // Contributor pages - wrapped inside ContributorLayout
-    {
-      path: '/contributor',
-      component: ContributorLayout,
-      meta: { requiresAuth: true },
-      children: [
+        // Contributor Features
         {
-          path: 'dashboard',
+          path: 'contributor/dashboard',
           name: 'contributor-dashboard',
           component: () => import('@/features/dashboard/ContributorDashboard.vue'),
-        },
-        {
-          path: 'map',
-          name: 'contributor-map',
-          component: () => import('@/features/dashboard/DashboardPage.vue'),
+          meta: { requiresAuth: true },
         },
       ],
     },
+
   ],
 })
 

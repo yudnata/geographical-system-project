@@ -76,12 +76,13 @@ const handleLogout = () => {
       <div class="px-3 py-4 border-t border-white/5">
         <div class="flex items-center gap-3 p-3 rounded-lg bg-white/5">
           <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-            {{ authStore.user?.name?.charAt(0).toUpperCase() || 'A' }}
+            {{ authStore.user?.full_name?.charAt(0).toUpperCase() || 'A' }}
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-xs font-semibold text-white truncate">{{ authStore.user?.name || 'Admin' }}</p>
+            <p class="text-xs font-semibold text-white truncate">{{ authStore.user?.full_name || 'Admin' }}</p>
             <p class="text-[10px] text-amber-400">Administrator</p>
           </div>
+
           <button @click="handleLogout" title="Logout" class="text-white/30 hover:text-red-400 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round"

@@ -3,13 +3,12 @@ import { ref } from 'vue'
 
 export interface User {
   id: string
-  name: string
+  full_name: string
   email?: string
   sso_provider?: string
   sso_id?: string
   avatar_url?: string
   phone?: string
-  institution?: string
   is_profile_completed?: boolean
   has_password?: boolean
   role: string
@@ -23,6 +22,7 @@ export interface GoogleUserInfo {
   picture: string
   [key: string]: unknown
 }
+
 
 export const useAuthStore = defineStore('auth', () => {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
@@ -107,11 +107,11 @@ export const useAuthStore = defineStore('auth', () => {
     return data
   }
 
-  const registerWithEmail = async (name: string, email: string, password: string) => {
+  const registerWithEmail = async (fullName: string, email: string, password: string) => {
     const res = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ full_name: fullName, email, password }),
     })
     return await res.json()
   }
@@ -122,12 +122,13 @@ export const useAuthStore = defineStore('auth', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: userInfo.email,
-        name: userInfo.name,
+        full_name: userInfo.name,
         sso_provider: 'google',
         sso_id: userInfo.sub,
         avatar_url: userInfo.picture,
       }),
     })
+
     const data = await res.json()
     if (data.success) {
       login(data.data.token, data.data.user)

@@ -3,7 +3,6 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useMapPointsStore, type GeoPoint } from '@/stores/mapPoints'
 import { useNotificationStore } from '@/stores/notifications'
 
-// Sub-components
 import PointFormHeader from './PointForm/PointFormHeader.vue'
 import PointFormFields from './PointForm/PointFormFields.vue'
 import PointFormActions from './PointForm/PointFormActions.vue'
@@ -12,14 +11,14 @@ const store = useMapPointsStore()
 const notificationStore = useNotificationStore()
 
 const getDefaultForm = (): Partial<GeoPoint> => ({
-  type_id: store.objectTypes.length > 0 ? store.objectTypes[0]?.id || 1 : 1,
+  category_id: store.objectTypes.length > 0 ? store.objectTypes[0]?.id || 1 : 1,
   name: '',
   latitude: 0,
   longitude: 0,
   address: '',
-  tahun_berdiri: new Date().getFullYear(),
-  status_kepemilikan: 'Pemerintah',
-  description: ''
+  tahun_berdiri: new Date().getFullYear().toString(),
+  description: '',
+  cover_image: ''
 })
 
 const formData = ref<Partial<GeoPoint>>(getDefaultForm())
@@ -54,24 +53,24 @@ const submitForm = async (status: 'draft' | 'pending') => {
 
   if (isSubmitting.value) return
   isSubmitting.value = true
-  
+
   formData.value.status = status
 
 
   try {
     const savedPoint = await store.savePoint(formData.value as GeoPoint)
     if (savedPoint && savedPoint.id) {
-      // Also save blog if content exists
       await store.saveBlog(savedPoint.id, {
         title: formData.value.name || 'Ulasan',
         content: blogContent.value.content,
-        cover_photo: formData.value.description // Reusing description as cover photo for now
+        cover_photo: formData.value.cover_image
       })
     }
   } finally {
     isSubmitting.value = false
   }
 }
+
 
 
 const handleKeydown = (e: KeyboardEvent) => {
@@ -89,27 +88,20 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
       <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-md" @click="store.closeModal()"></div>
 
       <!-- Modal Content -->
-      <div class="relative bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-lg flex flex-col max-h-[90vh] overflow-hidden transform transition-all border border-white/20">
+      <div class="relative bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-4xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all border border-white/20">
 
         <PointFormHeader :is-edit="!!formData.id" />
 
         <!-- Tab Switcher -->
         <div class="px-6 py-2 border-b border-slate-100 flex gap-6">
-          <button 
-            @click="activeTab = 'data'"
-            :class="[activeTab === 'data' ? 'text-indigo-600 border-b-2 border-indigo-600 font-bold' : 'text-slate-400 font-semibold']"
-            class="pb-2 text-xs transition-all"
-          >
+          <button @click="activeTab = 'data'" :class="[activeTab === 'data' ? 'text-primary border-b-2 border-primary font-bold' : 'text-slate-400 font-semibold']" class="pb-2 text-xs transition-all">
             Data Objek
           </button>
-          <button 
-            @click="activeTab = 'blog'"
-            :class="[activeTab === 'blog' ? 'text-indigo-600 border-b-2 border-indigo-600 font-bold' : 'text-slate-400 font-semibold']"
-            class="pb-2 text-xs transition-all"
-          >
+          <button @click="activeTab = 'blog'" :class="[activeTab === 'blog' ? 'text-primary border-b-2 border-primary font-bold' : 'text-slate-400 font-semibold']" class="pb-2 text-xs transition-all">
             Konten Blog
           </button>
         </div>
+
 
         <PointFormFields v-model="formData" v-model:blog-content="blogContent" :active-tab="activeTab" />
 

@@ -2,14 +2,14 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) UNIQUE NOT NULL,
-    name VARCHAR(255) NOT NULL DEFAULT '',
-    password VARCHAR(255),
-    role VARCHAR(50) DEFAULT 'contributor',
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(255) NOT NULL,
+    role VARCHAR(20) DEFAULT 'contributor',
+    -- 'admin', 'contributor'
     sso_provider VARCHAR(50),
     sso_id VARCHAR(255),
     avatar_url TEXT,
     phone VARCHAR(50),
-    institution VARCHAR(100),
     is_profile_completed BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -29,50 +29,48 @@ CREATE TABLE map_points (
         longitude DECIMAL(11, 8) NOT NULL,
         address TEXT,
         owner_id UUID REFERENCES users(id) ON DELETE CASCADE,
-        tahun_berdiri INT,
-        status_kepemilikan VARCHAR(50),
+        tahun_berdiri VARCHAR(100),
         description TEXT,
-        is_active BOOLEAN DEFAULT TRUE,
-        status VARCHAR(50) DEFAULT 'draft',
+        cover_image TEXT,
+        status VARCHAR(20) DEFAULT 'pending',
+        -- 'draft', 'pending', 'approved', 'rejected'
         rejection_note TEXT,
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        updated_at TIMESTAMPTZ DEFAULT NOW()
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE TABLE blogs (
     id SERIAL PRIMARY KEY,
     map_point_id INT UNIQUE REFERENCES map_points(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
-    content TEXT,
+    content TEXT NOT NULL,
     cover_photo TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
--- Seed default categories
-INSERT INTO categories (id, name, icon)
-VALUES (1, 'Pura', 'temple'),
-    (2, 'Air Terjun', 'waterfall'),
-    (3, 'Pantai', 'beach'),
-    (4, 'Gunung', 'mountain'),
-    (5, 'Bukit', 'hill'),
-    (6, 'Danau', 'lake'),
-    (7, 'Hutan Wisata', 'forest'),
-    (8, 'Desa Wisata', 'village'),
-    (9, 'Museum', 'museum'),
-    (10, 'Pasar Seni', 'market') ON CONFLICT (id) DO NOTHING;
--- Seed Admin Account (Password: admin123)
+-- SEED DATA
+INSERT INTO categories (name, icon)
+VALUES ('Pura', 'temple'),
+    ('Air Terjun', 'waterfall'),
+    ('Pantai', 'beach'),
+    ('Gunung', 'mountain'),
+    ('Bukit', 'hill'),
+    ('Danau', 'lake'),
+    ('Hutan Wisata', 'forest'),
+    ('Desa Wisata', 'village'),
+    ('Museum', 'museum'),
+    ('Pasar Seni', 'market');
+-- Default Admin (Password: admin123)
 INSERT INTO users (
-        id,
         email,
-        name,
         password,
+        full_name,
         role,
         is_profile_completed
     )
 VALUES (
-        uuid_generate_v4(),
         'admin@gmail.com',
-        'Administrator',
-        '$2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa',
+        '$2a$10$YSQhIlEnd39/DCG5n4lT6.H426voVihRs9F/cSIix7UeIb7PNVFa.',
+        'Administrator Utama',
         'admin',
         true
-    ) ON CONFLICT (email) DO NOTHING;
+    );

@@ -6,12 +6,13 @@ module.exports = {
         sans: ['Quicksand', 'sans-serif'],
       },
       colors: {
-        primary: '#2D6A4F',
-        accent: '#52B788',
-        surface: '#F1F8F4',
-        danger: '#D62828',
-        text: '#1B1B1B',
+        primary: '#059669', // Emerald 600 - More modern and balanced
+        accent: '#10b981',  // Emerald 500
+        surface: '#F8FAFC', // Lighter surface
+        danger: '#EF4444',
+        text: '#0F172A',
       },
+
     },
   },
   plugins: [],
