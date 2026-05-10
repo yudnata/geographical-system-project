@@ -1,17 +1,32 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useMapUIStore } from '@/stores/mapUI'
+import { useMapPointsStore } from '@/stores/mapPoints'
 import SidebarBrand from './SidebarBrand.vue'
 import SidebarNav from './SidebarNav.vue'
 import SidebarFooter from './SidebarFooter.vue'
 
 const uiStore = useMapUIStore()
+const pointsStore = useMapPointsStore()
+
+const isBlurred = computed(() => {
+  return uiStore.isProfileModalOpen ||
+    uiStore.isLogoutModalOpen ||
+    pointsStore.isModalOpen ||
+    pointsStore.confirmState.isOpen ||
+    !!uiStore.selectedPreviewPoint
+})
 </script>
 
 <template>
   <aside @mouseenter="uiStore.isSidebarExpanded = true" @mouseleave="uiStore.isSidebarExpanded = false"
-    class="group absolute top-4 left-4 bottom-4 w-16 hover:w-64 flex-col hidden md:flex shrink-0 transition-[width] duration-500 ease-in-out z-[1001] bg-transparent will-change-[width]">
+    class="group absolute top-4 left-4 bottom-4 w-16 hover:w-64 flex-col hidden md:flex shrink-0 transition-all duration-500 ease-in-out z-[10000] bg-transparent will-change-[width,filter]"
+    :class="{ 'pointer-events-none': isBlurred }">
     <div class="absolute inset-y-0 -left-4 -right-8 z-[-1] cursor-pointer"></div>
-    <div class="flex-1 flex flex-col bg-white overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-gray-100 rounded-2xl">
+    <div :class="[
+      'flex-1 flex flex-col bg-white border border-gray-100 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-300 overflow-hidden',
+      { 'blur-[4px] opacity-0': isBlurred }
+    ]">
       <SidebarBrand />
       <SidebarNav />
       <SidebarFooter />

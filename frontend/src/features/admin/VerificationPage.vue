@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useMapPointsStore, type GeoPoint } from '@/stores/mapPoints'
+import { useMapPointsStore } from '@/stores/mapPoints'
 import { useMapUIStore } from '@/stores/mapUI'
 import { useNotificationStore } from '@/stores/notifications'
 import { useAuthStore } from '@/stores/auth'
+import type { GeoPoint } from '@/types/map'
 
 const store = useMapPointsStore()
 const uiStore = useMapUIStore()

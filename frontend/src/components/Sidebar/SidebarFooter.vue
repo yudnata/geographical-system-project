@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useMapUIStore } from '@/stores/mapUI'
@@ -9,15 +8,13 @@ const router = useRouter()
 const authStore = useAuthStore()
 const uiStore = useMapUIStore()
 
-const showLogoutConfirm = ref(false)
-
 const handleLogout = () => {
-  showLogoutConfirm.value = true
+  uiStore.isLogoutModalOpen = true
 }
 
 const confirmLogout = () => {
   authStore.logout()
-  showLogoutConfirm.value = false
+  uiStore.isLogoutModalOpen = false
   router.push('/')
 }
 
@@ -54,5 +51,5 @@ const confirmLogout = () => {
     </div>
   </div>
 
-  <LogoutConfirmModal :show="showLogoutConfirm" @confirm="confirmLogout" @cancel="showLogoutConfirm = false" />
+  <LogoutConfirmModal :show="uiStore.isLogoutModalOpen" @confirm="confirmLogout" @cancel="uiStore.isLogoutModalOpen = false" />
 </template>

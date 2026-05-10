@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { GeoPoint } from '@/stores/mapPoints'
+import type { GeoPoint } from '@/types/map'
 
 export const useMapUIStore = defineStore('mapUI', () => {
   const isSidebarExpanded = ref(false)
   const isProfileModalOpen = ref(false)
+  const isLogoutModalOpen = ref(false)
 
   const isEditMode = ref(false)
   const flyToCoords = ref<{ lat: number; lng: number } | null>(null)
@@ -42,6 +43,7 @@ export const useMapUIStore = defineStore('mapUI', () => {
   return {
     isSidebarExpanded,
     isProfileModalOpen,
+    isLogoutModalOpen,
     isEditMode,
     flyToCoords,
     selectedPreviewPoint,

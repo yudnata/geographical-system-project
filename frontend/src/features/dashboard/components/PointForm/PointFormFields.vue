@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { useMapPointsStore, type GeoPoint } from '@/stores/mapPoints'
+import { useMapPointsStore } from '@/stores/mapPoints'
+import type { GeoPoint } from '@/types/map'
 import { QuillEditor } from '@vueup/vue-quill'
 import BlotFormatter from 'quill-blot-formatter'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'

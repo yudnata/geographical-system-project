@@ -3,33 +3,9 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from './auth'
 import { useNotificationStore } from './notifications'
 import { useMapUIStore } from './mapUI'
+import type { GeoPoint, ObjectType } from '@/types/map'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
-
-export interface GeoPoint {
-  id?: number
-  name: string
-  latitude: number
-  longitude: number
-  category_id: number
-  address?: string
-  tahun_berdiri?: string
-  description?: string
-  cover_image?: string
-  owner_id?: string
-  owner_name?: string
-  owner_avatar?: string
-  status?: 'draft' | 'pending' | 'approved' | 'rejected'
-  rejection_note?: string
-  created_at?: string
-  updated_at?: string
-}
-
-export interface ObjectType {
-  id: number
-  name: string
-  icon: string
-}
 
 export const useMapPointsStore = defineStore('mapPoints', () => {
   const points = ref<GeoPoint[]>([])

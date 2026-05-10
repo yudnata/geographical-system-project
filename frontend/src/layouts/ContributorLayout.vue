@@ -69,10 +69,10 @@ const handleLogout = () => {
       <div class="px-3 py-4 border-t border-slate-100">
         <div class="flex items-center gap-3 p-3 rounded-lg bg-slate-50">
           <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-            {{ authStore.user?.name?.charAt(0).toUpperCase() || 'K' }}
+            {{ authStore.user?.full_name?.charAt(0).toUpperCase() || 'K' }}
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-xs font-semibold text-slate-900 truncate">{{ authStore.user?.name || 'Kontributor' }}</p>
+            <p class="text-xs font-semibold text-slate-900 truncate">{{ authStore.user?.full_name || 'Kontributor' }}</p>
             <p class="text-[10px] text-slate-500 capitalize">{{ authStore.user?.role }}</p>
           </div>
           <button @click="handleLogout" title="Logout" class="text-slate-400 hover:text-red-500 transition-colors">

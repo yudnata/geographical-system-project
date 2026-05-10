@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
-import { useMapPointsStore, type GeoPoint } from '@/stores/mapPoints'
+import { useMapPointsStore } from '@/stores/mapPoints'
+import type { GeoPoint } from '@/types/map'
 import { useNotificationStore } from '@/stores/notifications'
 
 import PointFormHeader from './PointForm/PointFormHeader.vue'

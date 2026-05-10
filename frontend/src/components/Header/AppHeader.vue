@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useMapUIStore } from '@/stores/mapUI'
+import { useMapPointsStore } from '@/stores/mapPoints'
 import HeaderSearch from './HeaderSearch.vue'
 import HeaderCategoryFilter from './HeaderCategoryFilter.vue'
 import HeaderEditorControls from './HeaderEditorControls.vue'
@@ -9,6 +10,15 @@ import HeaderUserInfo from './HeaderUserInfo.vue'
 
 const route = useRoute()
 const uiStore = useMapUIStore()
+const pointsStore = useMapPointsStore()
+
+const isBlurred = computed(() => {
+  return uiStore.isProfileModalOpen ||
+    uiStore.isLogoutModalOpen ||
+    pointsStore.isModalOpen ||
+    pointsStore.confirmState.isOpen ||
+    !!uiStore.selectedPreviewPoint
+})
 
 const pageTitle = computed(() => {
   if (route.path === '/') return 'Eksplorasi Budaya Bali'
@@ -25,21 +35,25 @@ const isDashboard = computed(() => route.path === '/dashboard')
 
 <template>
   <header :class="[
-    'hidden md:flex absolute top-4 right-4 bg-white/95 backdrop-blur-md border border-gray-100 h-16 items-center px-6 shrink-0 z-[1000] justify-between rounded-2xl transition-all duration-500 ease-in-out',
-    uiStore.isSidebarExpanded ? 'left-[288px]' : 'left-24'
+    'hidden md:flex absolute top-4 right-4 h-16 shrink-0 z-[10000] transition-all duration-500 ease-in-out bg-transparent will-change-[left,filter]',
+    uiStore.isSidebarExpanded ? 'left-[288px]' : 'left-24',
+    { 'pointer-events-none': isBlurred }
   ]">
+    <div :class="[
+      'flex-1 flex items-center justify-between bg-white border border-gray-100 px-6 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-300',
+      { 'blur-[4px] opacity-0': isBlurred }
+    ]">
+      <div class="flex items-center gap-4 shrink-0">
+        <h2 class="text-lg font-bold text-gray-800 whitespace-nowrap">{{ pageTitle }}</h2>
+      </div>
 
-    <div class="flex items-center gap-4 shrink-0">
-      <h2 class="text-lg font-bold text-gray-800 whitespace-nowrap">{{ pageTitle }}</h2>
+      <div class="flex items-center gap-2.5 flex-1 px-6">
+        <HeaderSearch />
+        <HeaderCategoryFilter />
+        <HeaderEditorControls v-if="isDashboard" />
+      </div>
+
+      <HeaderUserInfo />
     </div>
-
-    <div class="flex items-center gap-2.5 flex-1 px-6">
-      <HeaderSearch />
-
-      <HeaderCategoryFilter />
-      <HeaderEditorControls v-if="isDashboard" />
-    </div>
-
-    <HeaderUserInfo />
   </header>
 </template>

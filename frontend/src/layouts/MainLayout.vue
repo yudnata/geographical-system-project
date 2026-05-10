@@ -26,6 +26,7 @@ const hideHeader = computed(() => {
 <template>
   <div class="flex h-screen w-full bg-surface font-sans text-text antialiased overflow-hidden">
     <AppSidebar />
+    <AppHeader v-if="!hideHeader" />
 
     <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
       <!-- Mobile Header -->
@@ -42,7 +43,6 @@ const hideHeader = computed(() => {
       </header>
 
       <main class="flex-1 relative overflow-hidden bg-surface h-full flex flex-col min-h-0">
-        <AppHeader v-if="!hideHeader" />
         <RouterView />
       </main>
 
