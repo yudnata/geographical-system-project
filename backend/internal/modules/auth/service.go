@@ -93,8 +93,8 @@ func (s *Service) SSOLogin(input SSOLoginReq) (string, *User, error) {
 }
 
 func (s *Service) UpdateProfile(userID string, input UpdateProfileReq) (*User, error) {
-	if input.FullName == "" || input.Phone == "" {
-		return nil, errors.New("Nama dan nomor telp wajib diisi")
+	if input.FullName == "" {
+		return nil, errors.New("Nama lengkap wajib diisi")
 	}
 
 	err := s.repo.UpdateProfile(context.Background(), userID, input.FullName, input.Phone, input.AvatarURL)

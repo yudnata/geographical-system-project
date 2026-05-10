@@ -3,10 +3,13 @@ import { onMounted, ref } from 'vue'
 import { useMapPointsStore, type GeoPoint } from '@/stores/mapPoints'
 import { useMapUIStore } from '@/stores/mapUI'
 import { useNotificationStore } from '@/stores/notifications'
+import { useAuthStore } from '@/stores/auth'
 
 const store = useMapPointsStore()
 const uiStore = useMapUIStore()
 const notificationStore = useNotificationStore()
+const authStore = useAuthStore()
+
 const pendingPoints = ref<GeoPoint[]>([])
 const isLoading = ref(false)
 
@@ -22,9 +25,10 @@ const fetchPending = async () => {
   try {
     const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/points/pending`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${authStore.token}`,
       },
     })
+
     const json = await res.json()
     if (json.success) {
       pendingPoints.value = json.data
@@ -41,7 +45,6 @@ onMounted(async () => {
   await fetchPending()
 })
 
-
 const openPreview = async (point: GeoPoint) => {
   selectedPoint.value = point
   isPreviewOpen.value = true
@@ -55,7 +58,6 @@ const openPreview = async (point: GeoPoint) => {
   }
 }
 
-
 const verifyPoint = async (status: 'approved' | 'rejected') => {
   if (!selectedPoint.value) return
 
@@ -65,7 +67,7 @@ const verifyPoint = async (status: 'approved' | 'rejected') => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${authStore.token}`,
       },
       body: JSON.stringify({
         status,
@@ -92,6 +94,25 @@ const verifyPoint = async (status: 'approved' | 'rejected') => {
 const getCategoryName = (id?: number) => {
   return store.objectTypes.find(t => t.id === id)?.name || 'Kategori'
 }
+
+const getCategoryIcon = (id?: number) => {
+  const iconName = store.objectTypes.find(t => t.id === id)?.icon || ''
+
+  const icons: Record<string, string> = {
+    'temple': 'M12 2l-4 3h8l-4-3zm0 4l-6 4h12l-6-4zm0 5l-8 6h16l-8-6zm-2 6h4v5h-4z',
+    'waterfall': 'M12 2v16M9 6c-2 0-3 1-3 3v13M15 6c2 0 3 1 3 3v13M12 22v-2',
+    'beach': 'M12 10a4 4 0 100-8 4 4 0 000 8z M2 17c2 0 3-1 5-1s3 1 5 1 3-1 5-1 3 1 5 1 M2 21c2 0 3-1 5-1s3 1 5 1 3-1 5-1 3 1 5 1',
+    'mountain': 'M3 20l9-16 9 16H3z M8 11l4-3 4 3',
+    'hill': 'M2 20c4-6 10-6 14 0 M12 20c4-4 8-4 10 0',
+    'lake': 'M12 21c-5 0-9-2-9-5s4-5 9-5 9 2 9 5-4 5-9 5z M12 17a3 3 0 110-6 3 3 0 010 6z',
+    'forest': 'M12 2l3 5H9l3-5zm0 6l4 7H8l4-7zm0 7v5',
+    'village': 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z',
+    'museum': 'M4 22V10h16v12M2 10l10-8 10 8M9 14v4M15 14v4',
+    'market': 'M3 3h18v2H3V3zm3 4v14h12V7H6zM10 7v14M14 7v14'
+  }
+
+  return icons[iconName] || 'M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z'
+}
 </script>
 
 <template>
@@ -101,7 +122,6 @@ const getCategoryName = (id?: number) => {
     'pt-6 pb-6 pr-6'
   ]">
     <div class="flex-1 flex flex-col bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.06)] border border-gray-100 overflow-hidden">
-      <!-- Header -->
       <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/40 shrink-0">
         <div>
           <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">Panel Verifikasi Budaya Bali</h2>
@@ -112,13 +132,11 @@ const getCategoryName = (id?: number) => {
         </div>
       </div>
 
-      <!-- Loading State -->
       <div v-if="isLoading" class="flex-1 flex flex-col items-center justify-center text-gray-400">
         <div class="w-10 h-10 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin mb-4"></div>
         <p class="text-sm font-bold">Memuat pengajuan...</p>
       </div>
 
-      <!-- Empty State -->
       <div v-else-if="pendingPoints.length === 0" class="flex-1 flex flex-col items-center justify-center p-12 text-center">
         <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-6 text-emerald-500 shadow-inner">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -129,12 +147,10 @@ const getCategoryName = (id?: number) => {
         <p class="text-gray-500 text-sm mt-1 max-w-xs mx-auto font-medium">Tidak ada pengajuan baru yang perlu diverifikasi saat ini.</p>
       </div>
 
-      <!-- Grid Pengajuan -->
       <div v-else class="flex-1 overflow-auto p-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div v-for="point in pendingPoints" :key="point.id"
             class="group bg-white border border-gray-100 rounded-3xl overflow-hidden hover:border-amber-500/30 transition-all duration-500 flex flex-col shadow-xl shadow-gray-200/50 relative">
-            <!-- Image Preview -->
             <div class="h-44 bg-gray-100 relative overflow-hidden">
               <img v-if="point.cover_image" :src="point.cover_image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
               <div v-else class="w-full h-full flex items-center justify-center text-gray-300 font-black uppercase text-[10px] tracking-widest">Tanpa Foto</div>
@@ -142,7 +158,6 @@ const getCategoryName = (id?: number) => {
                 <span class="text-[10px] font-black text-primary uppercase tracking-widest">{{ getCategoryName(point.category_id) }}</span>
               </div>
             </div>
-
 
             <div class="p-6 flex-1 flex flex-col">
               <div class="mb-6">
@@ -172,12 +187,10 @@ const getCategoryName = (id?: number) => {
       </div>
     </div>
 
-    <!-- Modal Preview -->
     <div v-if="isPreviewOpen && selectedPoint" class="fixed inset-0 z-[2000] flex items-center justify-center p-4 lg:p-12">
       <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-md" @click="isPreviewOpen = false"></div>
 
       <div class="relative bg-white border border-gray-100 rounded-[32px] w-full max-w-6xl max-h-full overflow-hidden flex flex-col shadow-2xl">
-        <!-- Header -->
         <div class="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
           <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
@@ -197,24 +210,28 @@ const getCategoryName = (id?: number) => {
           </button>
         </div>
 
-        <!-- Scrollable Content -->
         <div class="flex-1 overflow-y-auto p-8 lg:p-12 custom-scrollbar">
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            <!-- Sidebar Info -->
             <div class="lg:col-span-4 space-y-10">
               <div class="aspect-video rounded-3xl bg-gray-100 overflow-hidden shadow-inner border border-gray-100">
-                <img v-if="selectedPoint.description" :src="selectedPoint.description" class="w-full h-full object-cover">
+                <img v-if="selectedPoint.cover_image" :src="selectedPoint.cover_image" class="w-full h-full object-cover">
+                <div v-else class="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span class="text-[10px] font-black uppercase tracking-widest">Tanpa Foto</span>
+                </div>
               </div>
 
               <div class="space-y-8">
                 <div v-for="info in [
-                  { label: 'Nama Objek', value: selectedPoint.name, icon: 'M3.75 6h16.5M3.75 12h16.5m-16.5 5.25h16.5' },
-                  { label: 'Kategori', value: getCategoryName(selectedPoint.category_id), icon: 'M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.659A2.25 2.25 0 009.568 3z' },
-
-                  { label: 'Lokasi Spasial', value: `${selectedPoint.latitude}, ${selectedPoint.longitude}`, icon: 'M15 10.5a3 3 0 11-6 0 3 3 0 016 0z' },
-                  { label: 'Alamat Lengkap', value: selectedPoint.address, icon: 'M15 10.5a3 3 0 11-6 0 3 3 0 016 0z' }
+                  { label: 'Nama Objek', value: selectedPoint.name, icon: 'M3.75 6h16.5M3.75 12h16.5m-16.5 5.25h16.5', color: 'text-primary' },
+                  { label: 'Kategori', value: getCategoryName(selectedPoint.category_id), icon: getCategoryIcon(selectedPoint.category_id), color: 'text-amber-500' },
+                  { label: 'Lokasi Spasial', value: `${selectedPoint.latitude}, ${selectedPoint.longitude}`, icon: 'M15 10.5a3 3 0 11-6 0 3 3 0 016 0z', color: 'text-emerald-500' },
+                  { label: 'Alamat Lengkap', value: selectedPoint.address, icon: 'M15 10.5a3 3 0 11-6 0 3 3 0 016 0z', color: 'text-emerald-500' }
                 ]" :key="info.label" class="flex gap-4">
-                  <div class="w-5 h-5 text-primary mt-0.5 shrink-0">
+                  <div :class="['w-5 h-5 mt-0.5 shrink-0', info.color]">
                     <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-full h-full">
                       <path stroke-linecap="round" stroke-linejoin="round" :d="info.icon" />
                     </svg>
@@ -227,44 +244,47 @@ const getCategoryName = (id?: number) => {
               </div>
             </div>
 
-            <!-- Content Area -->
             <div class="lg:col-span-8">
               <div class="bg-gray-50/50 rounded-[40px] p-8 lg:p-12 border border-gray-100 min-h-full">
                 <p class="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
                   <span class="w-8 h-px bg-primary/30"></span>
-                  Artikel / Blog Konten
+                  Pratinjau Artikel
                 </p>
-                <div v-if="blogData" class="space-y-8">
-                  <h1 class="text-3xl lg:text-4xl font-black text-gray-900 tracking-tight leading-tight">{{ blogData.title }}</h1>
-                  <div class="prose prose-slate max-w-none text-gray-600 leading-relaxed font-medium" v-html="blogData.content"></div>
+
+                <h1 class="text-3xl lg:text-4xl font-black text-gray-900 tracking-tight leading-tight mb-8">
+                  {{ selectedPoint.name }}
+                </h1>
+
+                <div v-if="selectedPoint.cover_image" class="aspect-video rounded-2xl overflow-hidden mb-8 border border-gray-100">
+                  <img :src="selectedPoint.cover_image" class="w-full h-full object-cover" alt="Cover Preview">
                 </div>
-                <div v-else class="h-96 flex flex-col items-center justify-center text-gray-300">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+
+                <div v-if="blogData?.content" class="prose prose-slate max-w-none prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed font-medium" v-html="blogData.content"></div>
+                <div v-else class="flex flex-col items-center justify-center py-12 text-gray-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mb-3 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                       d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                   </svg>
-                  <p class="italic text-sm font-bold opacity-50 uppercase tracking-widest">Belum ada konten artikel</p>
+                  <p class="italic text-sm font-bold opacity-40 uppercase tracking-widest text-center">Belum ada konten artikel</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Footer Actions -->
         <div class="px-8 py-8 border-t border-gray-100 bg-gray-50/50 shrink-0 flex items-center justify-end gap-6">
           <button @click="showRejectModal = true"
             class="px-8 py-3.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 text-xs font-black uppercase tracking-widest rounded-2xl transition-all duration-300 shadow-sm">
             Tolak Pengajuan
           </button>
           <button @click="verifyPoint('approved')" :disabled="isProcessing"
-            class="px-10 py-3.5 bg-primary hover:bg-primary-dark text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all duration-300 shadow-xl shadow-primary/30 disabled:opacity-50">
+            class="px-10 py-3.5 bg-primary hover:bg-primary/80 text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all duration-300 disabled:opacity-50">
             {{ isProcessing ? 'Memproses...' : 'Setujui & Publikasikan' }}
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Reject Modal -->
     <div v-if="showRejectModal" class="fixed inset-0 z-[2100] flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-md" @click="showRejectModal = false"></div>
       <div class="relative bg-white border border-gray-200 rounded-3xl w-full max-w-md p-8 shadow-2xl">

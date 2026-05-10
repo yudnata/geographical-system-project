@@ -7,7 +7,10 @@ import PointFormHeader from './PointForm/PointFormHeader.vue'
 import PointFormFields from './PointForm/PointFormFields.vue'
 import PointFormActions from './PointForm/PointFormActions.vue'
 
+import { useMapUIStore } from '@/stores/mapUI'
+
 const store = useMapPointsStore()
+const uiStore = useMapUIStore()
 const notificationStore = useNotificationStore()
 
 const getDefaultForm = (): Partial<GeoPoint> => ({
@@ -28,13 +31,14 @@ const blogContent = ref({ title: '', content: '', cover_photo: '' })
 
 watch(() => store.activePoint, async (newPoint) => {
   if (newPoint) {
+    uiStore.setSelectedPreviewPoint(null)
     formData.value = { ...newPoint }
     if (newPoint.id) {
       const blog = await store.getBlog(newPoint.id)
       if (blog) {
-        blogContent.value = { title: blog.title, content: blog.content, cover_photo: blog.cover_photo || '' }
+        blogContent.value = { title: '', content: blog.content, cover_photo: blog.cover_photo || '' }
       } else {
-        blogContent.value = { title: newPoint.name, content: '', cover_photo: '' }
+        blogContent.value = { title: '', content: '', cover_photo: '' }
       }
     }
   } else {
@@ -56,22 +60,66 @@ const submitForm = async (status: 'draft' | 'pending') => {
 
   formData.value.status = status
 
+  const contentSnapshot = blogContent.value.content
+  const existingId = formData.value.id
 
   try {
-    const savedPoint = await store.savePoint(formData.value as GeoPoint)
-    if (savedPoint && savedPoint.id) {
-      await store.saveBlog(savedPoint.id, {
-        title: formData.value.name || 'Ulasan',
-        content: blogContent.value.content,
-        cover_photo: formData.value.cover_image
+    const isDraft = status === 'draft'
+    const savedPoint = await store.savePoint(formData.value as GeoPoint, isDraft)
+
+    const pointId = savedPoint?.id || existingId
+    if (pointId) {
+      await store.saveBlog(pointId, {
+        content: contentSnapshot
       })
+
+      if (isDraft && savedPoint) {
+        formData.value = { ...savedPoint }
+      }
     }
   } finally {
     isSubmitting.value = false
   }
 }
 
+const goToNextTab = async () => {
+  if (!formData.value.name || !formData.value.latitude || !formData.value.longitude) {
+    notificationStore.warning('Nama dan Koordinat wajib diisi!')
+    return
+  }
 
+  if (isSubmitting.value) return
+  isSubmitting.value = true
+
+  formData.value.status = formData.value.status || 'draft'
+
+  try {
+    const savedPoint = await store.savePoint(formData.value as GeoPoint, true)
+    if (savedPoint && savedPoint.id) {
+      formData.value = { ...formData.value, id: savedPoint.id }
+    }
+
+    const name = formData.value.name || ''
+    const cover = formData.value.cover_image || ''
+    const coverHtml = cover ? `<img src="${cover}" alt="${name}">` : ''
+
+    if (!blogContent.value.content || blogContent.value.content === '<p><br></p>') {
+      blogContent.value.content = `<h1>${name}</h1>${coverHtml}<p></p>`
+    } else {
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(blogContent.value.content, 'text/html')
+      const h1 = doc.querySelector('h1')
+      if (h1) {
+        h1.textContent = name
+        blogContent.value.content = doc.body.innerHTML
+      }
+    }
+
+    activeTab.value = 'blog'
+  } finally {
+    isSubmitting.value = false
+  }
+}
 
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Escape' && store.isModalOpen) store.closeModal()
@@ -84,29 +132,15 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 <template>
   <Transition name="modal-fade">
     <div v-if="store.isModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-      <!-- Backdrop -->
       <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-md" @click="store.closeModal()"></div>
 
-      <!-- Modal Content -->
       <div class="relative bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-4xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all border border-white/20">
 
-        <PointFormHeader :is-edit="!!formData.id" />
-
-        <!-- Tab Switcher -->
-        <div class="px-6 py-2 border-b border-slate-100 flex gap-6">
-          <button @click="activeTab = 'data'" :class="[activeTab === 'data' ? 'text-primary border-b-2 border-primary font-bold' : 'text-slate-400 font-semibold']" class="pb-2 text-xs transition-all">
-            Data Objek
-          </button>
-          <button @click="activeTab = 'blog'" :class="[activeTab === 'blog' ? 'text-primary border-b-2 border-primary font-bold' : 'text-slate-400 font-semibold']" class="pb-2 text-xs transition-all">
-            Konten Blog
-          </button>
-        </div>
-
+        <PointFormHeader :is-edit="!!formData.id" :active-tab="activeTab" />
 
         <PointFormFields v-model="formData" v-model:blog-content="blogContent" :active-tab="activeTab" />
 
-
-        <PointFormActions :is-edit="!!formData.id" :is-submitting="isSubmitting" @submit="submitForm" />
+        <PointFormActions :is-edit="!!formData.id" :is-submitting="isSubmitting" :active-tab="activeTab" @submit="submitForm" @next="goToNextTab" @back="activeTab = 'data'" />
 
       </div>
     </div>

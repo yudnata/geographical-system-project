@@ -17,6 +17,7 @@ type MapPoint struct {
 	Address       string    `json:"address"`
 	OwnerID       string    `json:"owner_id"`
 	OwnerName     string    `json:"owner_name"`
+	OwnerAvatar   string    `json:"owner_avatar"`
 	TahunBerdiri  *string   `json:"tahun_berdiri"`
 	Description   string    `json:"description"`
 	CoverImage    *string   `json:"cover_image"`
@@ -29,9 +30,7 @@ type MapPoint struct {
 type Blog struct {
 	ID         int       `json:"id"`
 	MapPointID int       `json:"map_point_id"`
-	Title      string    `json:"title"`
 	Content    string    `json:"content"`
-	CoverPhoto *string   `json:"cover_photo"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 }
@@ -45,7 +44,7 @@ type CreatePointReq struct {
 	TahunBerdiri string  `json:"tahun_berdiri"`
 	Description  string  `json:"description"`
 	CoverImage   string  `json:"cover_image"`
-	Status       string  `json:"status"` // draft or pending
+	Status       string  `json:"status"`
 }
 
 type UpdatePointReq struct {
@@ -57,17 +56,15 @@ type UpdatePointReq struct {
 	TahunBerdiri string  `json:"tahun_berdiri"`
 	Description  string  `json:"description"`
 	CoverImage   string  `json:"cover_image"`
-	Status       string  `json:"status"` // draft or pending
+	Status       string  `json:"status"`
 }
 
 type UpsertBlogReq struct {
-	Title      string  `json:"title"`
-	Content    string  `json:"content"`
-	CoverPhoto *string `json:"cover_photo"`
+	Content string `json:"content"`
 }
 
 type VerifyPointReq struct {
-	Status        string `json:"status"` // approved or rejected
+	Status        string `json:"status"`
 	RejectionNote string `json:"rejection_note"`
 }
 

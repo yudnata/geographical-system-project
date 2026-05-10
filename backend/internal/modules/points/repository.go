@@ -17,7 +17,7 @@ func NewRepository(db *pgxpool.Pool) *Repository {
 }
 
 const mapPointSelectQuery = `
-	SELECT gp.id, gp.category_id, gp.name, gp.latitude, gp.longitude, gp.address, gp.owner_id, COALESCE(u.full_name, 'Sistem'),
+	SELECT gp.id, gp.category_id, gp.name, gp.latitude, gp.longitude, gp.address, gp.owner_id, COALESCE(u.full_name, 'Sistem'), COALESCE(u.avatar_url, ''),
 	gp.tahun_berdiri, gp.description, gp.cover_image, gp.status, gp.rejection_note, gp.created_at, gp.updated_at
 	FROM map_points gp
 	LEFT JOIN users u ON gp.owner_id = u.id
@@ -31,7 +31,7 @@ func (r *Repository) scanMapPoints(rows pgx.Rows) ([]MapPoint, error) {
 		var p MapPoint
 		err := rows.Scan(
 			&p.ID, &p.CategoryID, &p.Name, &p.Latitude, &p.Longitude,
-			&p.Address, &p.OwnerID, &p.OwnerName, &p.TahunBerdiri,
+			&p.Address, &p.OwnerID, &p.OwnerName, &p.OwnerAvatar, &p.TahunBerdiri,
 			&p.Description, &p.CoverImage, &p.Status, &p.RejectionNote, &p.CreatedAt, &p.UpdatedAt,
 		)
 		if err != nil {
@@ -107,10 +107,10 @@ func (r *Repository) GetMyPoints(ctx context.Context, ownerID string) ([]MapPoin
 func (r *Repository) GetByID(ctx context.Context, id int) (*MapPoint, error) {
 	var p MapPoint
 	err := r.db.QueryRow(ctx,
-		`SELECT id, category_id, name, latitude, longitude, address, owner_id, tahun_berdiri, description, cover_image, status, rejection_note, created_at, updated_at 
-		 FROM map_points WHERE id=$1`, id).Scan(
+		`SELECT gp.id, gp.category_id, gp.name, gp.latitude, gp.longitude, gp.address, gp.owner_id, COALESCE(u.full_name, 'Sistem'), COALESCE(u.avatar_url, ''), gp.tahun_berdiri, gp.description, gp.cover_image, gp.status, gp.rejection_note, gp.created_at, gp.updated_at 
+		 FROM map_points gp LEFT JOIN users u ON gp.owner_id = u.id WHERE gp.id=$1`, id).Scan(
 		&p.ID, &p.CategoryID, &p.Name, &p.Latitude, &p.Longitude,
-		&p.Address, &p.OwnerID, &p.TahunBerdiri,
+		&p.Address, &p.OwnerID, &p.OwnerName, &p.OwnerAvatar, &p.TahunBerdiri,
 		&p.Description, &p.CoverImage, &p.Status, &p.RejectionNote, &p.CreatedAt, &p.UpdatedAt,
 	)
 	if err != nil {
@@ -170,23 +170,21 @@ func (r *Repository) DeleteCategory(ctx context.Context, id int) error {
 
 func (r *Repository) UpsertBlog(ctx context.Context, b *Blog) error {
 	query := `
-		INSERT INTO blogs (map_point_id, title, content, cover_photo, updated_at)
-		VALUES ($1, $2, $3, $4, NOW())
+		INSERT INTO blogs (map_point_id, content, updated_at)
+		VALUES ($1, $2, NOW())
 		ON CONFLICT (map_point_id) DO UPDATE
-		SET title = EXCLUDED.title,
-		    content = EXCLUDED.content,
-		    cover_photo = EXCLUDED.cover_photo,
+		    SET content = EXCLUDED.content,
 		    updated_at = NOW()
 		RETURNING id, created_at, updated_at
 	`
-	return r.db.QueryRow(ctx, query, b.MapPointID, b.Title, b.Content, b.CoverPhoto).
+	return r.db.QueryRow(ctx, query, b.MapPointID, b.Content).
 		Scan(&b.ID, &b.CreatedAt, &b.UpdatedAt)
 }
 
 func (r *Repository) GetBlogByPointID(ctx context.Context, pointID int) (*Blog, error) {
 	var b Blog
-	query := `SELECT id, map_point_id, title, content, cover_photo, created_at, updated_at FROM blogs WHERE map_point_id = $1`
-	err := r.db.QueryRow(ctx, query, pointID).Scan(&b.ID, &b.MapPointID, &b.Title, &b.Content, &b.CoverPhoto, &b.CreatedAt, &b.UpdatedAt)
+	query := `SELECT id, map_point_id, content, created_at, updated_at FROM blogs WHERE map_point_id = $1`
+	err := r.db.QueryRow(ctx, query, pointID).Scan(&b.ID, &b.MapPointID, &b.Content, &b.CreatedAt, &b.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}

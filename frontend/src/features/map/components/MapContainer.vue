@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, nextTick, h, render } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster'
@@ -45,8 +45,8 @@ const ICON_MAP: Record<string, string> = {
 
 
 const getIconPath = (iconName?: string) => {
-  if (!iconName) return 'M12 2v20M2 12h20' // Default crosshair
-  return ICON_MAP[iconName] || iconName // Return map or the string itself if it's already a path
+  if (!iconName) return 'M12 2v20M2 12h20'
+  return ICON_MAP[iconName] || iconName
 }
 
 
@@ -155,6 +155,8 @@ onMounted(async () => {
   })
 
   map.on('click', async (e: L.LeafletMouseEvent) => {
+    uiStore.setSelectedPreviewPoint(null)
+
     if (!uiStore.isEditMode) return
 
     emit('map-clicked', { lat: e.latlng.lat, lng: e.latlng.lng })
@@ -202,6 +204,11 @@ watch(() => store.activePoint, (newPoint) => {
   }
 })
 
+const getTypeName = (categoryId: number) => {
+  const typeObj = objectTypes.value.find(t => t.id === categoryId)
+  return typeObj ? typeObj.name : 'Unknown'
+}
+
 const renderMarkers = () => {
   if (!map || !markerLayer) return
   markerLayer.clearLayers()
@@ -214,7 +221,6 @@ const renderMarkers = () => {
 
   filteredPoints.value.forEach((point) => {
     const typeObj = objectTypes.value.find(t => t.id === point.category_id)
-    const typeName = typeObj ? typeObj.name : 'Unknown'
     const typeIconPath = getIconPath(typeObj?.icon)
 
     const color = colors[(point.category_id - 1) % colors.length]
@@ -241,23 +247,18 @@ const renderMarkers = () => {
 
     marker.on('click', (e) => {
       L.DomEvent.stopPropagation(e)
+
       if (activeMarkerEl) {
         activeMarkerEl.classList.remove('marker-highlighted')
       }
+
       const el = (e.target as L.Marker).getElement()
       if (el) {
         el.classList.add('marker-highlighted')
         activeMarkerEl = el
       }
-    })
 
-    const container = document.createElement('div')
-    const vnode = h(MapPopupContent, { point, typeName })
-    render(vnode, container)
-
-    marker.bindPopup(container, {
-      maxWidth: 300,
-      className: 'premium-popup'
+      uiStore.setSelectedPreviewPoint(point)
     })
   })
 }
@@ -279,6 +280,12 @@ watch(isSidebarExpanded, () => {
   })
 })
 
+watch([() => uiStore.selectedPreviewPoint, isEditMode], ([newPoint, newEdit]) => {
+  if (!newPoint || newEdit) {
+    map?.closePopup()
+  }
+})
+
 watch(flyToCoords, (newCoords) => {
   if (newCoords && map) {
     map.flyTo([newCoords.lat, newCoords.lng], 16)
@@ -289,7 +296,10 @@ watch(flyToCoords, (newCoords) => {
           const latLng = layer.getLatLng()
           if (latLng.lat === newCoords.lat && latLng.lng === newCoords.lng) {
             markerLayer?.zoomToShowLayer(layer, () => {
-              layer.openPopup()
+              const targetPoint = filteredPoints.value.find(p => p.latitude === newCoords.lat && p.longitude === newCoords.lng)
+              if (targetPoint) {
+                uiStore.setSelectedPreviewPoint(targetPoint)
+              }
             })
           }
         }
@@ -303,8 +313,52 @@ watch(flyToCoords, (newCoords) => {
   <div class="relative w-full h-full flex-1 min-h-0">
     <div ref="mapContainer" class="w-full h-full bg-slate-100 z-0"></div>
     <MapLegend />
+
+    <!-- Modern Centered Modal Preview -->
+    <Transition name="fade-modal">
+      <div v-if="uiStore.selectedPreviewPoint" class="absolute inset-0 z-[1000] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
+        @click.self="uiStore.setSelectedPreviewPoint(null)">
+        <div class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 modal-content">
+          <!-- Close Button -->
+          <button @click="uiStore.setSelectedPreviewPoint(null)"
+            class="absolute top-4 right-4 w-10 h-10 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white rounded-full flex items-center justify-center z-10 transition-colors shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          <MapPopupContent :point="uiStore.selectedPreviewPoint" :typeName="getTypeName(uiStore.selectedPreviewPoint.category_id)" />
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
+
+<style scoped>
+.fade-modal-enter-active,
+.fade-modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-modal-enter-from,
+.fade-modal-leave-to {
+  opacity: 0;
+}
+
+.fade-modal-enter-active .modal-content {
+  animation: modal-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modal-pop {
+  0% {
+    transform: scale(0.95) translateY(10px);
+  }
+
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+</style>
 
 <style>
 .leaflet-container {

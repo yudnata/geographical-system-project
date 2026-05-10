@@ -3,6 +3,7 @@ import { useMapPointsStore } from '@/stores/mapPoints'
 
 defineProps<{
   isEdit: boolean
+  activeTab: 'data' | 'blog'
 }>()
 
 const store = useMapPointsStore()
@@ -12,7 +13,8 @@ const store = useMapPointsStore()
   <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0 bg-gray-50/50">
     <div>
       <h3 class="text-lg font-black text-gray-800 tracking-tight">
-        {{ isEdit ? 'Update Data Objek' : 'Registrasi Objek Baru' }}
+        <template v-if="activeTab === 'blog'">Update Blog Objek</template>
+        <template v-else>{{ isEdit ? 'Update Data Objek' : 'Registrasi Objek Baru' }}</template>
       </h3>
 
       <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Geo Information System</p>

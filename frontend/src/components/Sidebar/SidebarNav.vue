@@ -17,8 +17,9 @@ const explorerItems = [
 ]
 
 const contributionItems = computed(() => {
-  if (!authStore.user) return []
+  if (!authStore.user || authStore.isAdmin()) return []
   return [
+
     {
       path: '/dashboard',
       name: 'Kontribusi Saya',
@@ -71,35 +72,28 @@ const isItemActive = (path: string) => {
 </script>
 
 <template>
-  <nav class="flex-1 py-6 space-y-8 overflow-y-auto overflow-x-hidden flex flex-col">
-    <!-- Explorer Section -->
-    <div class="space-y-1">
-      <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pl-[22px] mb-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100 whitespace-nowrap">
-        Explorer
-      </p>
-      <RouterLink v-for="item in explorerItems" :key="item.path" :to="item.path" :class="[
-        'flex items-center transition-all duration-300 group/item h-12 pl-0 pr-3 gap-3 overflow-hidden rounded-r-2xl rounded-l-none mr-3',
-        isItemActive(item.path)
-          ? 'bg-primary text-white'
-          : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600',
-      ]" :title="item.name">
-        <div class="w-10 h-10 ml-3 flex items-center justify-center shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
-            <path stroke-linecap="round" stroke-linejoin="round" :d="item.icon" />
-          </svg>
-        </div>
-        <span class="text-[11px] font-bold whitespace-nowrap tracking-tight uppercase transition-opacity duration-300 opacity-0 group-hover:opacity-100">
-          {{ item.name }}
-        </span>
-      </RouterLink>
-    </div>
+  <nav class="flex-1 py-6 space-y-1 overflow-y-auto overflow-x-hidden flex flex-col">
+    <!-- Combined Navigation Items -->
 
-    <!-- Contribution Section -->
-    <div v-if="authStore.user" class="space-y-1">
-      <p
-        class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pl-[22px] mb-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100 whitespace-nowrap">
-        Kontribusi
-      </p>
+    <!-- Explorer Items -->
+    <RouterLink v-for="item in explorerItems" :key="item.path" :to="item.path" :class="[
+      'flex items-center transition-all duration-300 group/item h-12 pl-0 pr-3 gap-3 overflow-hidden rounded-r-2xl rounded-l-none mr-3',
+      isItemActive(item.path)
+        ? 'bg-primary text-white'
+        : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600',
+    ]" :title="item.name">
+      <div class="w-10 h-10 ml-3 flex items-center justify-center shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" :d="item.icon" />
+        </svg>
+      </div>
+      <span class="text-[11px] font-bold whitespace-nowrap tracking-tight uppercase transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+        {{ item.name }}
+      </span>
+    </RouterLink>
+
+    <!-- Contribution Items -->
+    <template v-if="authStore.user && !authStore.isAdmin()">
       <RouterLink v-for="item in contributionItems" :key="item.path" :to="item.path" :class="[
         'flex items-center transition-all duration-300 group/item h-12 pl-0 pr-3 gap-3 overflow-hidden rounded-r-2xl rounded-l-none mr-3',
         isItemActive(item.path)
@@ -115,14 +109,10 @@ const isItemActive = (path: string) => {
           {{ item.name }}
         </span>
       </RouterLink>
-    </div>
+    </template>
 
-    <!-- Management Section -->
-    <div v-if="authStore.user" class="space-y-1">
-      <p
-        class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pl-[22px] mb-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100 whitespace-nowrap">
-        Manajemen
-      </p>
+    <!-- Management Items -->
+    <template v-if="authStore.user">
       <RouterLink v-for="item in managementItems" :key="item.path" :to="item.path" :class="[
         'flex items-center transition-all duration-300 group/item h-12 pl-0 pr-3 gap-3 overflow-hidden rounded-r-2xl rounded-l-none mr-3',
         isItemActive(item.path)
@@ -138,9 +128,6 @@ const isItemActive = (path: string) => {
           {{ item.name }}
         </span>
       </RouterLink>
-
-
-
-    </div>
+    </template>
   </nav>
 </template>

@@ -1,20 +1,20 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import type { GeoPoint } from '@/stores/mapPoints'
 
 export const useMapUIStore = defineStore('mapUI', () => {
   const isSidebarExpanded = ref(false)
   const isProfileModalOpen = ref(false)
 
-  // Map Interaction State
   const isEditMode = ref(false)
   const flyToCoords = ref<{ lat: number; lng: number } | null>(null)
+  const selectedPreviewPoint = ref<GeoPoint | null>(null)
 
-  // Search & Filter State
   const searchQuery = ref('')
   const filterTypeId = ref<number | null>(null)
   const filterMyPoints = ref(false)
+  const statusFilter = ref<'all' | 'draft' | 'approved'>('all')
 
-  // Toggle Actions
   const toggleSidebar = () => {
     isSidebarExpanded.value = !isSidebarExpanded.value
   }
@@ -35,18 +35,25 @@ export const useMapUIStore = defineStore('mapUI', () => {
     flyToCoords.value = { lat, lng }
   }
 
+  const setSelectedPreviewPoint = (point: GeoPoint | null) => {
+    selectedPreviewPoint.value = point
+  }
+
   return {
     isSidebarExpanded,
     isProfileModalOpen,
     isEditMode,
     flyToCoords,
+    selectedPreviewPoint,
     searchQuery,
     filterTypeId,
     filterMyPoints,
+    statusFilter,
     toggleSidebar,
     toggleEditMode,
     openProfileModal,
     closeProfileModal,
     flyTo,
+    setSelectedPreviewPoint,
   }
 })

@@ -23,13 +23,13 @@ export interface GoogleUserInfo {
   [key: string]: unknown
 }
 
-
 export const useAuthStore = defineStore('auth', () => {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 
   const defaultAvatarUrl = ref<string>(
-    'https://ui-avatars.com/api/?background=random&color=fff&name=User',
+    'https://ui-avatars.com/api/?background=E5E7EB&color=9CA3AF&name=Guest',
   )
+
   const token = ref<string | null>(localStorage.getItem('auth_token'))
   const user = ref<User | null>(null)
 

@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { RouterView, RouterLink, useRoute } from 'vue-router'
 import AppSidebar from '@/components/Sidebar/AppSidebar.vue'
 import AppHeader from '@/components/Header/AppHeader.vue'
 import { useAuthStore } from '@/stores/auth'
+import { useMapUIStore } from '@/stores/mapUI'
 
 const route = useRoute()
 const authStore = useAuthStore()
+const uiStore = useMapUIStore()
+
+watch(() => route.path, () => {
+  uiStore.setSelectedPreviewPoint(null)
+})
 
 const hideHeader = computed(() => {
-  const adminRoutes = ['/admin/categories', '/admin/users', '/admin/verification', '/contributor/dashboard']
-  return adminRoutes.some(path => route.path.startsWith(path))
+  const routesWithoutHeader = ['/admin/categories', '/admin/users', '/admin/verification', '/contributor/dashboard', '/blog']
+  return routesWithoutHeader.some(path => route.path.startsWith(path))
 })
 
 </script>

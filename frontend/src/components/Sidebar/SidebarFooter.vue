@@ -10,8 +10,9 @@ const uiStore = useMapUIStore()
 
 const handleLogout = () => {
   authStore.logout()
-  router.push('/login')
+  router.push('/')
 }
+
 </script>
 
 <template>
@@ -37,8 +38,6 @@ const handleLogout = () => {
       </div>
       <span class="text-[10px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 tracking-wide uppercase">Logout</span>
     </button>
-
-
     <!-- Copyright Footer -->
     <div class="pt-4 px-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden">
       <p class="text-[9px] font-bold text-gray-400 whitespace-nowrap tracking-widest uppercase">

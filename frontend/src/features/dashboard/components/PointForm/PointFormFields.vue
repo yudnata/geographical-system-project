@@ -5,7 +5,6 @@ import BlotFormatter from 'quill-blot-formatter'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import { ref } from 'vue'
 
-
 const props = defineProps<{
   modelValue: Partial<GeoPoint>
   blogContent: { title: string; content: string; cover_photo: string }
@@ -16,6 +15,8 @@ const emit = defineEmits(['update:modelValue', 'update:blogContent'])
 
 const store = useMapPointsStore()
 const isUploading = ref(false)
+const isBlogImageUploading = ref(false)
+const quillRef = ref()
 
 const modules = {
   name: 'blotFormatter',
@@ -39,7 +40,7 @@ const handleFileUpload = async (e: Event) => {
     const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/upload`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
       },
       body: formData,
     })
@@ -52,14 +53,67 @@ const handleFileUpload = async (e: Event) => {
   }
 }
 
+const uploadImageToCloudinary = (file: File): Promise<string | null> => {
+  return new Promise((resolve) => {
+    const formData = new FormData()
+    formData.append('image', file)
+    formData.append('folder', 'blogs')
+
+    isBlogImageUploading.value = true
+
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/upload`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
+      },
+      body: formData,
+    })
+      .then(res => res.json())
+      .then(json => {
+        if (json.success) resolve(json.data.url)
+        else resolve(null)
+      })
+      .catch(() => resolve(null))
+      .finally(() => {
+        isBlogImageUploading.value = false
+      })
+  })
+}
+
+const imageHandler = () => {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'image/*'
+  input.click()
+
+  input.onchange = async () => {
+    const file = input.files?.[0]
+    if (!file) return
+
+    const url = await uploadImageToCloudinary(file)
+    if (!url) return
+
+    const quill = quillRef.value?.getQuill()
+    if (!quill) return
+
+    const range = quill.getSelection(true)
+    quill.insertEmbed(range.index, 'image', url)
+    quill.setSelection(range.index + 1)
+  }
+}
+
+const onEditorReady = () => {
+  const quill = quillRef.value?.getQuill()
+  if (quill) {
+    quill.getModule('toolbar').addHandler('image', imageHandler)
+  }
+}
 </script>
 
 <template>
   <div class="p-6 overflow-y-auto w-full space-y-5">
-    <!-- DATA TAB -->
     <template v-if="activeTab === 'data'">
 
-      <!-- Nama Bangunan -->
       <div class="space-y-1.5">
         <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider ml-1">Nama Objek / Destinasi</label>
         <input :value="modelValue.name" @input="e => updateField('name', (e.target as HTMLInputElement).value)" type="text"
@@ -67,7 +121,6 @@ const handleFileUpload = async (e: Event) => {
           placeholder="Nama objek wisata...">
       </div>
 
-      <!-- Kategori -->
       <div class="space-y-1.5">
         <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider ml-1">Kategori Objek</label>
         <select :value="modelValue.category_id" @change="e => updateField('category_id', parseInt((e.target as HTMLSelectElement).value))"
@@ -76,7 +129,6 @@ const handleFileUpload = async (e: Event) => {
         </select>
       </div>
 
-      <!-- Estimasi Masa -->
       <div class="space-y-1.5">
         <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider ml-1">Estimasi Masa / Sejarah</label>
         <input :value="modelValue.tahun_berdiri" @input="e => updateField('tahun_berdiri', (e.target as HTMLInputElement).value)" type="text"
@@ -84,7 +136,6 @@ const handleFileUpload = async (e: Event) => {
           placeholder="Contoh: Abad ke-14 atau Masa Kerajaan Majapahit">
       </div>
 
-      <!-- Foto Utama -->
       <div class="space-y-1.5">
         <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider ml-1">Foto Utama</label>
         <div class="flex gap-4 items-center">
@@ -109,7 +160,6 @@ const handleFileUpload = async (e: Event) => {
         </div>
       </div>
 
-      <!-- Alamat -->
       <div class="space-y-1.5">
         <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider ml-1">Alamat Lengkap</label>
         <textarea :value="modelValue.address" @input="e => updateField('address', (e.target as HTMLTextAreaElement).value)" rows="2"
@@ -119,21 +169,28 @@ const handleFileUpload = async (e: Event) => {
 
     </template>
 
-    <!-- BLOG TAB -->
     <template v-else>
-      <div class="space-y-4 h-full flex flex-col">
-        <div class="space-y-1.5 flex-1 flex flex-col">
-          <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider ml-1">Konten Ulasan Destinasi (Blog)</label>
-          <div class="flex-1 min-h-[450px] border border-slate-200 rounded-2xl overflow-hidden shadow-inner">
-            <QuillEditor :content="blogContent.content" contentType="html" @update:content="val => emit('update:blogContent', { ...blogContent, content: val })" theme="snow" :toolbar="[
+      <div class="h-full flex flex-col">
+        <div class="flex items-center justify-between mb-2 px-1">
+          <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider">Isi Artikel / Ulasan</label>
+          <span v-if="isBlogImageUploading" class="text-[10px] text-primary font-bold animate-pulse flex items-center gap-1">
+            <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            Mengunggah gambar...
+          </span>
+        </div>
+        <div class="flex-1 min-h-[450px] border border-slate-200 rounded-2xl overflow-hidden shadow-inner">
+          <QuillEditor ref="quillRef" :content="blogContent.content" contentType="html" @update:content="val => emit('update:blogContent', { ...blogContent, content: val })" @ready="onEditorReady"
+            theme="snow" :toolbar="[
               ['bold', 'italic', 'underline', 'strike'],
               [{ 'header': 1 }, { 'header': 2 }],
+              [{ 'size': ['small', false, 'large', 'huge'] }],
               [{ 'list': 'ordered' }, { 'list': 'bullet' }],
               [{ 'align': [] }],
               ['image', 'clean']
-            ]" :modules="modules" placeholder="Tuliskan ulasan mendalam tentang destinasi ini... Anda bisa menyisipkan gambar juga." class="h-full" />
-          </div>
-
+            ]" :modules="modules" placeholder="Tuliskan ulasan mendalam tentang destinasi ini... Anda bisa menyisipkan gambar juga." class="h-full prose-bali" />
         </div>
       </div>
     </template>
@@ -142,10 +199,39 @@ const handleFileUpload = async (e: Event) => {
 </template>
 
 <style>
+.prose-bali,
+.ql-editor {
+  font-family: 'Urbanist', sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.8 !important;
+  color: #334155 !important;
+}
+
+.prose-bali h1,
+.ql-editor h1 {
+  font-size: 2.25rem !important;
+  font-weight: 800 !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 1rem !important;
+  letter-spacing: -0.025em !important;
+}
+
+.prose-bali h2,
+.ql-editor h2 {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  margin-top: 1.25rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.prose-bali p,
+.ql-editor p {
+  margin-bottom: 1.25rem !important;
+}
+
 .ql-editor {
   caret-color: #000000 !important;
-  font-size: 15px;
-  line-height: 1.6;
+  min-height: 400px;
 }
 
 .flex-1.min-h-\[450px\]:focus-within {

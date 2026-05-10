@@ -132,7 +132,6 @@ const handleUploadAvatar = async () => {
     const uploadJson = await uploadRes.json()
     if (uploadJson.success) {
       const finalAvatarURL = uploadJson.data.url
-      // Update profile with new avatar URL
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/auth/profile`, {
         method: 'PUT',
         headers: {
@@ -152,6 +151,8 @@ const handleUploadAvatar = async () => {
         selectedFile.value = null
         previewImage.value = null
         isPreviewOpen.value = false
+      } else {
+        throw new Error(json.message || 'Gagal menyimpan URL avatar ke profil')
       }
     }
   } catch (err: unknown) {

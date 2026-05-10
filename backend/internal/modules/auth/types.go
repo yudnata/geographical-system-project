@@ -23,7 +23,6 @@ type UpdateProfileReq struct {
 	AvatarURL string `json:"avatar_url"`
 }
 
-
 type RegisterReq struct {
 	Email    string `json:"email"`
 	FullName string `json:"full_name"`
@@ -42,7 +41,6 @@ type SSOLoginReq struct {
 	SSOID       string `json:"sso_id"`
 	AvatarURL   string `json:"avatar_url"`
 }
-
 
 type UpdatePasswordReq struct {
 	OldPassword *string `json:"old_password"`

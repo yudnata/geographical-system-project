@@ -18,6 +18,5 @@ func RegisterRoutes(router fiber.Router, h *Handler, authMiddleware fiber.Handle
 	auth.Post("/avatar", authMiddleware, h.UploadAvatar)
 	auth.Put("/password", authMiddleware, h.UpdatePassword)
 
-
 	auth.Get("/users", authMiddleware, middleware.RequireRole("admin"), h.GetUsers)
 }

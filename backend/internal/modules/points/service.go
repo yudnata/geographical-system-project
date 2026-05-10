@@ -71,12 +71,12 @@ func (s *Service) GetPending(ctx context.Context) ([]MapPoint, error) {
 	return s.repo.GetPending(ctx)
 }
 
-func (s *Service) UpdatePoint(ctx context.Context, userID string, id int, req UpdatePointReq) (*MapPoint, error) {
+func (s *Service) UpdatePoint(ctx context.Context, userID string, role string, id int, req UpdatePointReq) (*MapPoint, error) {
 	existing, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("Titik tidak ditemukan")
 	}
-	if existing.OwnerID != userID {
+	if role != "admin" && existing.OwnerID != userID {
 		return nil, errors.New("Anda tidak memiliki izin untuk mengubah titik ini")
 	}
 
@@ -103,9 +103,9 @@ func (s *Service) UpdatePoint(ctx context.Context, userID string, id int, req Up
 	return point, nil
 }
 
-func (s *Service) DeletePoint(ctx context.Context, userID string, id int) error {
+func (s *Service) DeletePoint(ctx context.Context, userID string, role string, id int) error {
 	existing, err := s.repo.GetByID(ctx, id)
-	if err != nil || existing.OwnerID != userID {
+	if err != nil || (role != "admin" && existing.OwnerID != userID) {
 		return errors.New("Titik tidak ditemukan atau Anda tidak memiliki izin")
 	}
 	return s.repo.Delete(ctx, id)
@@ -115,9 +115,7 @@ func (s *Service) DeletePoint(ctx context.Context, userID string, id int) error 
 func (s *Service) UpsertBlog(ctx context.Context, pointID int, req UpsertBlogReq) (*Blog, error) {
 	blog := &Blog{
 		MapPointID: pointID,
-		Title:      req.Title,
 		Content:    req.Content,
-		CoverPhoto: req.CoverPhoto,
 	}
 	if err := s.repo.UpsertBlog(ctx, blog); err != nil {
 		return nil, err

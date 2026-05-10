@@ -6,9 +6,9 @@ import (
 )
 
 type Config struct {
-	Port        string
-	DatabaseURL string
-	JWTSecret   string
+	Port             string
+	DatabaseURL      string
+	JWTSecret        string
 	Mode             string
 	DefaultAvatarURL string
 }
@@ -23,7 +23,7 @@ func Load() *Config {
 		DatabaseURL:      getEnv("DATABASE_URL", ""),
 		JWTSecret:        getEnv("JWT_SECRET", "secret"),
 		Mode:             getEnv("MODE", "development"),
-		DefaultAvatarURL: getEnv("DEFAULT_AVATAR_URL", "https://ui-avatars.com/api/?background=random&color=fff&name=User"),
+		DefaultAvatarURL: getEnv("DEFAULT_AVATAR_URL", "https://ui-avatars.com/api/?background=E5E7EB&color=9CA3AF&name=Guest"),
 	}
 }
 

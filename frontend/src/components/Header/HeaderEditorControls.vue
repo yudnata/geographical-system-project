@@ -8,10 +8,12 @@ const uiStore = useMapUIStore()
   <div class="h-5 w-px bg-gray-300 shrink-0"></div>
 
   <div class="flex bg-gray-200/80 rounded-xl p-0.5 shrink-0 h-9 items-center">
-    <button @click="uiStore.filterMyPoints = false" :class="!uiStore.filterMyPoints ? 'bg-white shadow-md text-primary font-extrabold' : 'text-gray-500 hover:text-gray-700'"
+    <button @click="uiStore.statusFilter = 'all'" :class="uiStore.statusFilter === 'all' ? 'bg-white shadow-md text-primary font-extrabold' : 'text-gray-500 hover:text-gray-700'"
       class="px-3 h-7 text-[11px] font-bold rounded-lg transition-all whitespace-nowrap">Semua</button>
-    <button @click="uiStore.filterMyPoints = true" :class="uiStore.filterMyPoints ? 'bg-white shadow-md text-primary font-extrabold' : 'text-gray-500 hover:text-gray-700'"
-      class="px-3 h-7 text-[11px] font-bold rounded-lg transition-all whitespace-nowrap">Milik Saya</button>
+    <button @click="uiStore.statusFilter = 'draft'" :class="uiStore.statusFilter === 'draft' ? 'bg-white shadow-md text-primary font-extrabold' : 'text-gray-500 hover:text-gray-700'"
+      class="px-3 h-7 text-[11px] font-bold rounded-lg transition-all whitespace-nowrap">Draft</button>
+    <button @click="uiStore.statusFilter = 'approved'" :class="uiStore.statusFilter === 'approved' ? 'bg-white shadow-md text-primary font-extrabold' : 'text-gray-500 hover:text-gray-700'"
+      class="px-3 h-7 text-[11px] font-bold rounded-lg transition-all whitespace-nowrap">Verif</button>
   </div>
 
   <div class="flex items-center gap-2.5 h-9 px-3 rounded-xl border border-gray-300 bg-white cursor-pointer shrink-0" @click="uiStore.toggleEditMode()">

@@ -5,7 +5,7 @@ const store = useNotificationStore()
 </script>
 
 <template>
-  <div class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
+  <div class="fixed top-6 right-6 z-[99999] flex flex-col gap-3 pointer-events-none">
     <TransitionGroup name="toast" tag="div" class="flex flex-col gap-3">
       <div v-for="n in store.notifications" :key="n.id"
         class="pointer-events-auto min-w-[320px] max-w-md bg-white/80 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] rounded-2xl p-4 flex items-start gap-4 transition-all duration-300 hover:scale-[1.02]">

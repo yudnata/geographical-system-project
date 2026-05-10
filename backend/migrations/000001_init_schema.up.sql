@@ -41,7 +41,6 @@ CREATE TABLE map_points (
 CREATE TABLE blogs (
     id SERIAL PRIMARY KEY,
     map_point_id INT UNIQUE REFERENCES map_points(id) ON DELETE CASCADE,
-    title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     cover_photo TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

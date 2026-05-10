@@ -95,7 +95,8 @@ func (h *Handler) Update(c fiber.Ctx) error {
 	}
 
 	userID := c.Locals("userID").(string)
-	point, err := h.service.UpdatePoint(c.Context(), userID, id, input)
+	role := c.Locals("role").(string)
+	point, err := h.service.UpdatePoint(c.Context(), userID, role, id, input)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal memperbarui data: " + err.Error()))
 	}
@@ -110,7 +111,8 @@ func (h *Handler) Delete(c fiber.Ctx) error {
 	}
 
 	userID := c.Locals("userID").(string)
-	if err := h.service.DeletePoint(c.Context(), userID, id); err != nil {
+	role := c.Locals("role").(string)
+	if err := h.service.DeletePoint(c.Context(), userID, role, id); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal menghapus data: " + err.Error()))
 	}
 

@@ -25,7 +25,7 @@ const isDashboard = computed(() => route.path === '/dashboard')
 
 <template>
   <header :class="[
-    'hidden md:flex absolute top-4 right-4 bg-white/95 backdrop-blur-md border border-gray-100 h-16 items-center px-6 shrink-0 shadow-[0_8px_32px_rgba(0,0,0,0.12)] z-[1000] justify-between rounded-2xl transition-all duration-500 ease-in-out',
+    'hidden md:flex absolute top-4 right-4 bg-white/95 backdrop-blur-md border border-gray-100 h-16 items-center px-6 shrink-0 z-[1000] justify-between rounded-2xl transition-all duration-500 ease-in-out',
     uiStore.isSidebarExpanded ? 'left-[288px]' : 'left-24'
   ]">
 
@@ -35,6 +35,7 @@ const isDashboard = computed(() => route.path === '/dashboard')
 
     <div class="flex items-center gap-2.5 flex-1 px-6">
       <HeaderSearch />
+
       <HeaderCategoryFilter />
       <HeaderEditorControls v-if="isDashboard" />
     </div>
