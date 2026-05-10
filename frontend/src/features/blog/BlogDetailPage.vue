@@ -95,6 +95,21 @@ const fetchBlogDetail = async () => {
   }
 }
 
+const shareToWhatsApp = () => {
+  if (!detail.value) return
+  const text = `Halo! Lihat artikel tentang "${detail.value.point.name}" di Budaya Bali: ${window.location.href}`
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+}
+
+const copyLink = async () => {
+  try {
+    await navigator.clipboard.writeText(window.location.href)
+    notificationStore.success('Link berhasil disalin ke clipboard!')
+  } catch {
+    notificationStore.error('Gagal menyalin link')
+  }
+}
+
 onMounted(fetchBlogDetail)
 
 </script>
@@ -169,14 +184,14 @@ onMounted(fetchBlogDetail)
               <div>
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-3 text-center lg:text-left">Bagikan Budaya</p>
                 <div class="flex items-center gap-3">
-                  <button title="Salin Link"
+                  <button @click="copyLink" title="Salin Link"
                     class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-primary hover:text-white transition-all flex items-center justify-center border border-slate-100 shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
                       <path stroke-linecap="round" stroke-linejoin="round"
                         d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
                     </svg>
                   </button>
-                  <button title="WhatsApp"
+                  <button @click="shareToWhatsApp" title="WhatsApp"
                     class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center border border-slate-100 shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                       <path
@@ -188,7 +203,7 @@ onMounted(fetchBlogDetail)
 
               <button @click="router.push('/')"
                 class="w-full lg:w-auto px-8 py-4 bg-primary text-white font-extrabold rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-primary/20 shrink-0 text-sm">
-                Jelajahi Peta Bali
+                Jelajahi Budaya Lainnya
               </button>
             </div>
           </div>

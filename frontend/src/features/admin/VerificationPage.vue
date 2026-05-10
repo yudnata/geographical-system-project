@@ -138,11 +138,6 @@ const getCategoryIcon = (id?: number) => {
       </div>
 
       <div v-else-if="pendingPoints.length === 0" class="flex-1 flex flex-col items-center justify-center p-12 text-center">
-        <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-6 text-emerald-500 shadow-inner">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
         <h3 class="text-gray-900 font-black text-lg">Semua Bersih!</h3>
         <p class="text-gray-500 text-sm mt-1 max-w-xs mx-auto font-medium">Tidak ada pengajuan baru yang perlu diverifikasi saat ini.</p>
       </div>

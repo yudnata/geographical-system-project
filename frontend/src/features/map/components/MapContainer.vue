@@ -245,19 +245,40 @@ const renderMarkers = () => {
 
     const marker = L.marker([point.latitude, point.longitude], { icon: customIcon }).addTo(markerLayer!)
 
-    marker.on('click', (e) => {
-      L.DomEvent.stopPropagation(e)
+    marker.bindTooltip(`
+      <div class="font-sans w-48 overflow-hidden">
+        ${point.cover_image ? `
+          <div class="h-24 w-full mb-2 overflow-hidden rounded-lg">
+            <img src="${point.cover_image}" class="w-full h-full object-cover" />
+          </div>
+        ` : ''}
+        <div class="p-1">
+          <p class="font-black text-slate-900 text-sm leading-tight mb-1">${point.name}</p>
+          <p class="text-[10px] text-slate-500 font-medium leading-tight">${point.address || 'Lokasi Budaya'}</p>
+        </div>
+      </div>
+    `, {
+      direction: 'top',
+      offset: [0, -10],
+      className: 'custom-leaflet-tooltip'
+    })
 
-      if (activeMarkerEl) {
-        activeMarkerEl.classList.remove('marker-highlighted')
-      }
-
+    marker.on('mouseover', (e) => {
       const el = (e.target as L.Marker).getElement()
       if (el) {
         el.classList.add('marker-highlighted')
-        activeMarkerEl = el
       }
+    })
 
+    marker.on('mouseout', (e) => {
+      const el = (e.target as L.Marker).getElement()
+      if (el) {
+        el.classList.remove('marker-highlighted')
+      }
+    })
+
+    marker.on('click', (e) => {
+      L.DomEvent.stopPropagation(e)
       uiStore.setSelectedPreviewPoint(point)
     })
   })
