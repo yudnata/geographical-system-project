@@ -24,16 +24,29 @@ const getDefaultForm = (): Partial<GeoPoint> => ({
 
 const formData = ref<Partial<GeoPoint>>(getDefaultForm())
 const isSubmitting = ref(false)
+const activeTab = ref<'data' | 'blog'>('data')
+const blogContent = ref({ title: '', content: '', cover_photo: '' })
 
-watch(() => store.activePoint, (newPoint) => {
+watch(() => store.activePoint, async (newPoint) => {
   if (newPoint) {
     formData.value = { ...newPoint }
+    if (newPoint.id) {
+      const blog = await store.getBlog(newPoint.id)
+      if (blog) {
+        blogContent.value = { title: blog.title, content: blog.content, cover_photo: blog.cover_photo || '' }
+      } else {
+        blogContent.value = { title: newPoint.name, content: '', cover_photo: '' }
+      }
+    }
   } else {
     formData.value = getDefaultForm()
+    blogContent.value = { title: '', content: '', cover_photo: '' }
   }
+  activeTab.value = 'data'
 }, { immediate: true })
 
-const submitForm = async () => {
+
+const submitForm = async (status: 'draft' | 'pending') => {
   if (!formData.value.name || !formData.value.latitude || !formData.value.longitude) {
     notificationStore.warning('Nama dan Koordinat wajib diisi!')
     return
@@ -41,13 +54,25 @@ const submitForm = async () => {
 
   if (isSubmitting.value) return
   isSubmitting.value = true
+  
+  formData.value.status = status
+
 
   try {
-    await store.savePoint(formData.value as GeoPoint)
+    const savedPoint = await store.savePoint(formData.value as GeoPoint)
+    if (savedPoint && savedPoint.id) {
+      // Also save blog if content exists
+      await store.saveBlog(savedPoint.id, {
+        title: formData.value.name || 'Ulasan',
+        content: blogContent.value.content,
+        cover_photo: formData.value.description // Reusing description as cover photo for now
+      })
+    }
   } finally {
     isSubmitting.value = false
   }
 }
+
 
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Escape' && store.isModalOpen) store.closeModal()
@@ -68,7 +93,26 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 
         <PointFormHeader :is-edit="!!formData.id" />
 
-        <PointFormFields v-model="formData" />
+        <!-- Tab Switcher -->
+        <div class="px-6 py-2 border-b border-slate-100 flex gap-6">
+          <button 
+            @click="activeTab = 'data'"
+            :class="[activeTab === 'data' ? 'text-indigo-600 border-b-2 border-indigo-600 font-bold' : 'text-slate-400 font-semibold']"
+            class="pb-2 text-xs transition-all"
+          >
+            Data Objek
+          </button>
+          <button 
+            @click="activeTab = 'blog'"
+            :class="[activeTab === 'blog' ? 'text-indigo-600 border-b-2 border-indigo-600 font-bold' : 'text-slate-400 font-semibold']"
+            class="pb-2 text-xs transition-all"
+          >
+            Konten Blog
+          </button>
+        </div>
+
+        <PointFormFields v-model="formData" v-model:blog-content="blogContent" :active-tab="activeTab" />
+
 
         <PointFormActions :is-edit="!!formData.id" :is-submitting="isSubmitting" @submit="submitForm" />
 

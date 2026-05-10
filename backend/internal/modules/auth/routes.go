@@ -1,6 +1,9 @@
 package auth
 
-import "github.com/gofiber/fiber/v3"
+import (
+	"backend/internal/middleware"
+	"github.com/gofiber/fiber/v3"
+)
 
 func RegisterRoutes(router fiber.Router, h *Handler, authMiddleware fiber.Handler) {
 	auth := router.Group("/auth")
@@ -13,4 +16,6 @@ func RegisterRoutes(router fiber.Router, h *Handler, authMiddleware fiber.Handle
 	auth.Get("/me", authMiddleware, h.GetMe)
 	auth.Put("/profile", authMiddleware, h.UpdateProfile)
 	auth.Put("/password", authMiddleware, h.UpdatePassword)
+
+	auth.Get("/users", authMiddleware, middleware.RequireRole("admin"), h.GetUsers)
 }

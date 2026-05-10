@@ -113,7 +113,7 @@ func (r *Repository) GetMyPoints(ctx context.Context, ownerID string) ([]MapPoin
 
 func (r *Repository) GetByID(ctx context.Context, id int) (*MapPoint, error) {
 	var p MapPoint
-	err := r.db.QueryRow(ctx, 
+	err := r.db.QueryRow(ctx,
 		`SELECT id, category_id, name, latitude, longitude, address, owner_id, tahun_berdiri, status_kepemilikan, description, is_active, status, rejection_note, created_at, updated_at 
 		 FROM map_points WHERE id=$1`, id).Scan(
 		&p.ID, &p.CategoryID, &p.Name, &p.Latitude, &p.Longitude,
@@ -138,4 +138,64 @@ func (r *Repository) Update(ctx context.Context, id int, p *MapPoint) error {
 func (r *Repository) Delete(ctx context.Context, id int) error {
 	_, err := r.db.Exec(ctx, `DELETE FROM map_points WHERE id=$1`, id)
 	return err
+}
+
+func (r *Repository) GetAllCategories(ctx context.Context) ([]Category, error) {
+	rows, err := r.db.Query(ctx, `SELECT id, name, icon FROM categories ORDER BY id ASC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []Category
+	for rows.Next() {
+		var c Category
+		if err := rows.Scan(&c.ID, &c.Name, &c.Icon); err != nil {
+			return nil, err
+		}
+		categories = append(categories, c)
+	}
+	return categories, nil
+}
+
+func (r *Repository) CreateCategory(ctx context.Context, name, icon string) (*Category, error) {
+	var c Category
+	err := r.db.QueryRow(ctx, `INSERT INTO categories (name, icon) VALUES ($1, $2) RETURNING id, name, icon`, name, icon).Scan(&c.ID, &c.Name, &c.Icon)
+	return &c, err
+}
+
+func (r *Repository) UpdateCategory(ctx context.Context, id int, name, icon string) (*Category, error) {
+	var c Category
+	err := r.db.QueryRow(ctx, `UPDATE categories SET name=$1, icon=$2 WHERE id=$3 RETURNING id, name, icon`, name, icon, id).Scan(&c.ID, &c.Name, &c.Icon)
+	return &c, err
+}
+
+func (r *Repository) DeleteCategory(ctx context.Context, id int) error {
+	_, err := r.db.Exec(ctx, `DELETE FROM categories WHERE id=$1`, id)
+	return err
+}
+
+func (r *Repository) UpsertBlog(ctx context.Context, b *Blog) error {
+	query := `
+		INSERT INTO blogs (map_point_id, title, content, cover_photo, updated_at)
+		VALUES ($1, $2, $3, $4, NOW())
+		ON CONFLICT (map_point_id) DO UPDATE
+		SET title = EXCLUDED.title,
+		    content = EXCLUDED.content,
+		    cover_photo = EXCLUDED.cover_photo,
+		    updated_at = NOW()
+		RETURNING id, created_at, updated_at
+	`
+	return r.db.QueryRow(ctx, query, b.MapPointID, b.Title, b.Content, b.CoverPhoto).
+		Scan(&b.ID, &b.CreatedAt, &b.UpdatedAt)
+}
+
+func (r *Repository) GetBlogByPointID(ctx context.Context, pointID int) (*Blog, error) {
+	var b Blog
+	query := `SELECT id, map_point_id, title, content, cover_photo, created_at, updated_at FROM blogs WHERE map_point_id = $1`
+	err := r.db.QueryRow(ctx, query, pointID).Scan(&b.ID, &b.MapPointID, &b.Title, &b.Content, &b.CoverPhoto, &b.CreatedAt, &b.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &b, nil
 }

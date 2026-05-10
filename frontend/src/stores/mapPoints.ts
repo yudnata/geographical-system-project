@@ -19,6 +19,8 @@ export interface GeoPoint {
   owner_id?: string
   owner_name?: string
   is_active?: boolean
+  status?: 'draft' | 'pending' | 'approved' | 'rejected'
+  rejection_note?: string
   created_at?: string
   updated_at?: string
 }
@@ -31,41 +33,7 @@ export interface ObjectType {
 
 export const useMapPointsStore = defineStore('mapPoints', () => {
   const points = ref<GeoPoint[]>([])
-  const objectTypes = ref<ObjectType[]>([
-    {
-      id: 1,
-      name: 'Rumah',
-      icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
-    },
-    {
-      id: 2,
-      name: 'Kantor',
-      icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
-    },
-    {
-      id: 3,
-      name: 'Rumah Sakit',
-      icon: 'M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z',
-    },
-    {
-      id: 4,
-      name: 'Sekolah',
-      icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-    },
-    { id: 5, name: 'Tempat Ibadah', icon: 'M21 12a9 9 0 11-18 0 9 9 0 0118 0z M12 8v8 M8 12h8' },
-    {
-      id: 6,
-      name: 'Objek Wisata',
-      icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z',
-    },
-    {
-      id: 7,
-      name: 'Kuliner',
-      icon: 'M10.5 3.5a2.121 2.121 0 00-3 0 3.84 3.84 0 00-1.05 3.8c.215.845.663 1.59 1.25 2.15a13.56 13.56 0 014.25 5.5c.34 1.15.66 2.3.95 3.45.1.35.45.6.85.6h.4c.4 0 .75-.25.85-.6.29-1.15.61-2.3.95-3.45a13.56 13.56 0 014.25-5.5 3.84 3.84 0 00.2-5.95 2.121 2.121 0 00-3 0l-2.5 2.5-2.5-2.5z',
-    },
-    { id: 8, name: 'Mall', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
-  ])
-
+  const objectTypes = ref<ObjectType[]>([])
   const isModalOpen = ref(false)
   const activePoint = ref<GeoPoint | null>(null)
 
@@ -85,6 +53,16 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
       if (json.success) points.value = json.data
     } catch {
       notificationStore.error('Gagal mengambil data bangunan')
+    }
+  }
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_URL}/categories`)
+      const json = await res.json()
+      if (json.success) objectTypes.value = json.data
+    } catch {
+      notificationStore.error('Gagal mengambil data kategori')
     }
   }
 
@@ -117,12 +95,14 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
         }
         notificationStore.success(isEdit ? 'Data berhasil diperbarui' : 'Data berhasil ditambahkan')
         closeModal()
+        return savedPoint
       } else {
         notificationStore.error(json.message || 'Gagal menyimpan data')
       }
     } catch {
       notificationStore.error('Terjadi kesalahan jaringan')
     }
+    return null
   }
 
   const deletePoint = async (id: number) => {
@@ -144,6 +124,44 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
     } catch {
       notificationStore.error('Terjadi kesalahan jaringan')
     }
+  }
+
+  const saveBlog = async (
+    pointId: number,
+    blogData: { title: string; content: string; cover_photo?: string },
+  ) => {
+    const authStore = useAuthStore()
+    try {
+      const res = await fetch(`${API_URL}/points/${pointId}/blog`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authStore.token}`,
+        },
+        body: JSON.stringify(blogData),
+      })
+      const json = await res.json()
+      if (json.success) {
+        notificationStore.success('Konten blog berhasil disimpan')
+        return json.data
+      } else {
+        notificationStore.error(json.message || 'Gagal menyimpan blog')
+      }
+    } catch {
+      notificationStore.error('Kesalahan jaringan saat menyimpan blog')
+    }
+    return null
+  }
+
+  const getBlog = async (pointId: number) => {
+    try {
+      const res = await fetch(`${API_URL}/points/${pointId}/blog`)
+      const json = await res.json()
+      if (json.success) return json.data
+    } catch {
+      // It's okay if blog is not found
+    }
+    return null
   }
 
   const openModal = (point?: GeoPoint) => {
@@ -187,8 +205,11 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
     confirmState,
     filteredPoints,
     fetchPoints,
+    fetchCategories,
     savePoint,
     deletePoint,
+    saveBlog,
+    getBlog,
     openModal,
     closeModal,
     requestConfirm,

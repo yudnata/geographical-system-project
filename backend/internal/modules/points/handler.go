@@ -2,16 +2,18 @@ package points
 
 import (
 	"backend/pkg/response"
+	"backend/pkg/upload"
 	"github.com/gofiber/fiber/v3"
 	"strconv"
 )
 
 type Handler struct {
-	service *Service
+	service  *Service
+	uploader *upload.CloudinaryService
 }
 
-func NewHandler(service *Service) *Handler {
-	return &Handler{service: service}
+func NewHandler(service *Service, uploader *upload.CloudinaryService) *Handler {
+	return &Handler{service: service, uploader: uploader}
 }
 
 func (h *Handler) Create(c fiber.Ctx) error {
@@ -94,4 +96,122 @@ func (h *Handler) Delete(c fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response.Success("Titik bangunan berhasil dihapus", nil))
+}
+
+func (h *Handler) GetCategories(c fiber.Ctx) error {
+	categories, err := h.service.GetAllCategories()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal mengambil kategori"))
+	}
+	if categories == nil {
+		categories = []Category{}
+	}
+	return c.Status(fiber.StatusOK).JSON(response.Success("Berhasil mengambil kategori", categories))
+}
+
+func (h *Handler) CreateCategory(c fiber.Ctx) error {
+	var input struct {
+		Name string `json:"name"`
+		Icon string `json:"icon"`
+	}
+	if err := c.Bind().Body(&input); err != nil || input.Name == "" || input.Icon == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error("Nama dan icon wajib diisi"))
+	}
+	cat, err := h.service.CreateCategory(input.Name, input.Icon)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal membuat kategori"))
+	}
+	return c.Status(fiber.StatusCreated).JSON(response.Success("Kategori berhasil dibuat", cat))
+}
+
+func (h *Handler) UpdateCategory(c fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error("ID tidak valid"))
+	}
+	var input struct {
+		Name string `json:"name"`
+		Icon string `json:"icon"`
+	}
+	if err := c.Bind().Body(&input); err != nil || input.Name == "" || input.Icon == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error("Nama dan icon wajib diisi"))
+	}
+	cat, err := h.service.UpdateCategory(id, input.Name, input.Icon)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal memperbarui kategori"))
+	}
+	return c.Status(fiber.StatusOK).JSON(response.Success("Kategori berhasil diperbarui", cat))
+}
+
+func (h *Handler) DeleteCategory(c fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error("ID tidak valid"))
+	}
+	if err := h.service.DeleteCategory(id); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal menghapus kategori"))
+	}
+	return c.Status(fiber.StatusOK).JSON(response.Success("Kategori berhasil dihapus", nil))
+}
+
+func (h *Handler) GetBlog(c fiber.Ctx) error {
+	pointID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error("ID Titik tidak valid"))
+	}
+	blog, err := h.service.GetBlog(c.Context(), pointID)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(response.Error("Blog tidak ditemukan"))
+	}
+	return c.JSON(response.Success("Berhasil mengambil data blog", blog))
+}
+
+func (h *Handler) UpsertBlog(c fiber.Ctx) error {
+	pointID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error("ID Titik tidak valid"))
+	}
+
+	var input UpsertBlogReq
+	if err := c.Bind().Body(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error("Format input tidak valid"))
+	}
+
+	userID := c.Locals("userID").(string)
+	role := c.Locals("role").(string)
+	point, err := h.service.repo.GetByID(c.Context(), pointID)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(response.Error("Titik tidak ditemukan"))
+	}
+	if role != "admin" && point.OwnerID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(response.Error("Anda tidak memiliki izin untuk mengulas titik ini"))
+	}
+
+	blog, err := h.service.UpsertBlog(c.Context(), pointID, input)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal menyimpan ulasan: " + err.Error()))
+	}
+
+	return c.JSON(response.Success("Ulasan berhasil disimpan", blog))
+}
+
+func (h *Handler) Upload(c fiber.Ctx) error {
+	fileHeader, err := c.FormFile("image")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error("File tidak ditemukan"))
+	}
+
+	file, err := fileHeader.Open()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal membuka file"))
+	}
+	defer file.Close()
+
+	folder := c.FormValue("folder", "points")
+	url, err := h.uploader.UploadImage(c.Context(), file, folder)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal mengunggah gambar: " + err.Error()))
+	}
+
+	return c.JSON(response.Success("Gambar berhasil diunggah", fiber.Map{"url": url}))
 }

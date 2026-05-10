@@ -58,6 +58,29 @@ func (r *Repository) FindByID(ctx context.Context, id string) (*User, error) {
 	return &u, err
 }
 
+func (r *Repository) FindAllUsers(ctx context.Context) ([]User, error) {
+	rows, err := r.db.Query(ctx, `SELECT id, email, name, sso_provider, avatar_url, phone, institution, is_profile_completed, role, created_at FROM users ORDER BY created_at DESC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []User
+	for rows.Next() {
+		var u User
+		var ssoProv, avatarUrl, phone, institution *string
+		if err := rows.Scan(&u.ID, &u.Email, &u.Name, &ssoProv, &avatarUrl, &phone, &institution, &u.IsProfileCompleted, &u.Role, &u.CreatedAt); err != nil {
+			return nil, err
+		}
+		u.SSOProvider = ssoProv
+		u.AvatarURL = avatarUrl
+		u.Phone = phone
+		u.Institution = institution
+		users = append(users, u)
+	}
+	return users, nil
+}
+
 func (r *Repository) UpdateSSO(ctx context.Context, id, provider, ssoId, avatarUrl string) error {
 	_, err := r.db.Exec(ctx, `UPDATE users SET sso_provider=$1, sso_id=$2, avatar_url=$3 WHERE id=$4`, provider, ssoId, avatarUrl, id)
 	return err

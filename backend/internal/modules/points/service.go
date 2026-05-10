@@ -13,12 +13,28 @@ func NewService(repo *Repository) *Service {
 	return &Service{repo: repo}
 }
 
+func (s *Service) GetAllCategories() ([]Category, error) {
+	return s.repo.GetAllCategories(context.Background())
+}
+
+func (s *Service) CreateCategory(name, icon string) (*Category, error) {
+	return s.repo.CreateCategory(context.Background(), name, icon)
+}
+
+func (s *Service) UpdateCategory(id int, name, icon string) (*Category, error) {
+	return s.repo.UpdateCategory(context.Background(), id, name, icon)
+}
+
+func (s *Service) DeleteCategory(id int) error {
+	return s.repo.DeleteCategory(context.Background(), id)
+}
+
 func (s *Service) CreatePoint(ctx context.Context, ownerID string, input CreatePointReq) (*MapPoint, error) {
 	status := input.Status
 	if status == "" {
 		status = "draft"
 	}
-	
+
 	point := &MapPoint{
 		CategoryID:        &input.CategoryID,
 		Name:              input.Name,
@@ -94,4 +110,23 @@ func (s *Service) DeletePoint(ctx context.Context, userID string, id int) error 
 		return errors.New("Anda tidak memiliki izin untuk menghapus titik ini")
 	}
 	return s.repo.Delete(ctx, id)
+}
+
+func (s *Service) UpsertBlog(ctx context.Context, pointID int, req UpsertBlogReq) (*Blog, error) {
+	blog := &Blog{
+		MapPointID: pointID,
+		Title:      req.Title,
+		Content:    req.Content,
+		CoverPhoto: req.CoverPhoto,
+	}
+
+	err := s.repo.UpsertBlog(ctx, blog)
+	if err != nil {
+		return nil, err
+	}
+	return blog, nil
+}
+
+func (s *Service) GetBlog(ctx context.Context, pointID int) (*Blog, error) {
+	return s.repo.GetBlogByPointID(ctx, pointID)
 }

@@ -76,6 +76,14 @@ func (h *Handler) GetMe(c fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(response.Success("Data profil berhasil diambil", user))
 }
 
+func (h *Handler) GetUsers(c fiber.Ctx) error {
+	users, err := h.service.GetUsers()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal mengambil data pengguna"))
+	}
+	return c.Status(fiber.StatusOK).JSON(response.Success("Data pengguna berhasil diambil", users))
+}
+
 func (h *Handler) UpdatePassword(c fiber.Ctx) error {
 	userID := c.Locals("userID").(string)
 

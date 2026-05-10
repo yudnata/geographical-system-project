@@ -29,8 +29,29 @@ const navItems = computed(() => {
       requiresAuth: true,
     },
   ]
+  
+  if (authStore.user) {
+    if (authStore.user.role === 'admin') {
+      all.push({
+        path: '/admin/categories',
+        name: 'Panel Admin',
+        icon: 'M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0m-9.75 0h9.75',
+        requiresAuth: true,
+      })
+    }
+    
+    // Everyone can be a contributor for now, or check role
+    all.push({
+      path: '/contributor/dashboard',
+      name: 'Panel Kontributor',
+      icon: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z',
+      requiresAuth: true,
+    })
+  }
+
   return all.filter(item => !item.requiresAuth || !!authStore.user)
 })
+
 
 const isItemActive = (path: string) => {
   return route.path === path

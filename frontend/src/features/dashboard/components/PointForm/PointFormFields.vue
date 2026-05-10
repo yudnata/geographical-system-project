@@ -1,113 +1,146 @@
 <script setup lang="ts">
 import { useMapPointsStore, type GeoPoint } from '@/stores/mapPoints'
+import { QuillEditor } from '@vueup/vue-quill'
+import '@vueup/vue-quill/dist/vue-quill.snow.css'
+import { ref } from 'vue'
+
 
 const props = defineProps<{
   modelValue: Partial<GeoPoint>
+  blogContent: { title: string; content: string; cover_photo: string }
+  activeTab: 'data' | 'blog'
 }>()
 
-const emit = defineEmits(['update:modelValue'])
-const store = useMapPointsStore()
+const emit = defineEmits(['update:modelValue', 'update:blogContent'])
 
-// Helper to update individual fields with type safety
+const store = useMapPointsStore()
+const isUploading = ref(false)
+
 const updateField = <K extends keyof GeoPoint>(field: K, value: GeoPoint[K]) => {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
 }
+
+const handleFileUpload = async (e: Event) => {
+  const target = e.target as HTMLInputElement
+  if (!target.files?.length) return
+
+  isUploading.value = true
+  const formData = new FormData()
+  formData.append('image', target.files[0]!)
+  formData.append('folder', 'points')
+
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/upload`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: formData,
+    })
+    const json = await res.json()
+    if (json.success) {
+      updateField('description', json.data.url) // Reusing description as main photo for now or add cover_photo to GeoPoint
+    }
+  } finally {
+    isUploading.value = false
+  }
+}
+
 </script>
 
 <template>
   <div class="p-6 overflow-y-auto w-full space-y-5">
-    <!-- Coordination Info -->
-    <div class="bg-primary/5 text-primary text-[10px] px-4 py-3 rounded-xl flex gap-4 font-black border border-primary/10 shadow-sm">
-      <div class="flex items-center gap-1.5">
-        <span class="opacity-40 uppercase tracking-tighter">Lat:</span> 
-        {{ modelValue.latitude?.toFixed(6) || 0 }}
+    <!-- DATA TAB -->
+    <template v-if="activeTab === 'data'">
+      <!-- Coordination Info -->
+      <div class="bg-indigo-50 text-indigo-700 text-[10px] px-4 py-3 rounded-xl flex gap-4 font-black border border-indigo-100 shadow-sm">
+        <div class="flex items-center gap-1.5">
+          <span class="opacity-40 uppercase tracking-tighter">Lat:</span> 
+          {{ modelValue.latitude?.toFixed(6) || 0 }}
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="opacity-40 uppercase tracking-tighter">Lng:</span> 
+          {{ modelValue.longitude?.toFixed(6) || 0 }}
+        </div>
       </div>
-      <div class="flex items-center gap-1.5">
-        <span class="opacity-40 uppercase tracking-tighter">Lng:</span> 
-        {{ modelValue.longitude?.toFixed(6) || 0 }}
-      </div>
-    </div>
 
-    <!-- Nama Bangunan -->
-    <div class="space-y-1.5">
-      <label class="text-[11px] font-black text-gray-500 uppercase tracking-wider ml-1">Nama Bangunan</label>
-      <div class="relative group">
-        <span class="absolute inset-y-0 left-3.5 flex items-center text-gray-400 group-focus-within:text-primary transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
-          </svg>
-        </span>
+      <!-- Nama Bangunan -->
+      <div class="space-y-1.5">
+        <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider ml-1">Nama Objek / Destinasi</label>
         <input 
           :value="modelValue.name" 
           @input="e => updateField('name', (e.target as HTMLInputElement).value)"
           type="text" 
-          class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm font-bold text-gray-800 outline-none"
-          placeholder="Contoh: Gedung Kantor Utama">
+          class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-600 transition-all text-sm font-bold text-slate-800 outline-none"
+          placeholder="Nama objek wisata...">
       </div>
-    </div>
 
-    <!-- Kategori -->
-    <div class="space-y-1.5">
-      <label class="text-[11px] font-black text-gray-500 uppercase tracking-wider ml-1">Tipe / Kategori</label>
-      <div class="relative">
+      <!-- Kategori -->
+      <div class="space-y-1.5">
+        <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider ml-1">Kategori Objek</label>
         <select 
           :value="modelValue.type_id"
           @change="e => updateField('type_id', parseInt((e.target as HTMLSelectElement).value))"
-          class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm font-bold text-gray-700 appearance-none outline-none">
+          class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-600 transition-all text-sm font-bold text-slate-700 appearance-none outline-none">
           <option v-for="type in store.objectTypes" :value="type.id" :key="type.id">{{ type.name.toUpperCase() }}</option>
         </select>
-        <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-          </svg>
-        </span>
-      </div>
-    </div>
-
-    <!-- Alamat -->
-    <div class="space-y-1.5">
-      <label class="text-[11px] font-black text-gray-500 flex items-center justify-between uppercase tracking-wider ml-1">
-        Alamat Spasial
-        <span class="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full shadow-sm normal-case font-black">AUTO-DETECT</span>
-      </label>
-      <textarea 
-        :value="modelValue.address"
-        @input="e => updateField('address', (e.target as HTMLTextAreaElement).value)"
-        rows="3"
-        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-xs font-bold text-gray-600 leading-relaxed outline-none"
-        placeholder="Alamat akan terdeteksi otomatis saat Anda memilih titik di peta..."></textarea>
-    </div>
-
-    <!-- Grid: Tahun & Kepemilikan -->
-    <div class="grid grid-cols-2 gap-5">
-      <div class="space-y-1.5">
-        <label class="text-[11px] font-black text-gray-500 uppercase tracking-wider ml-1">Tahun Berdiri</label>
-        <input 
-          :value="modelValue.tahun_berdiri"
-          @input="e => updateField('tahun_berdiri', parseInt((e.target as HTMLInputElement).value))"
-          type="number"
-          class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm font-bold text-gray-800 outline-none">
       </div>
 
+      <!-- Foto Utama -->
       <div class="space-y-1.5">
-        <label class="text-[11px] font-black text-gray-500 uppercase tracking-wider ml-1">Status Milik</label>
-        <div class="relative">
-          <select 
-            :value="modelValue.status_kepemilikan"
-            @change="e => updateField('status_kepemilikan', (e.target as HTMLSelectElement).value)"
-            class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm font-bold text-gray-700 appearance-none outline-none">
-            <option value="Pemerintah">PEMERINTAH</option>
-            <option value="Swasta">SWASTA</option>
-            <option value="Pribadi">PRIBADI</option>
-            <option value="Yayasan">YAYASAN</option>
-          </select>
-          <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-              <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+        <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider ml-1">Foto Utama</label>
+        <div class="flex gap-4 items-center">
+          <div v-if="modelValue.description" class="w-20 h-20 rounded-xl overflow-hidden border-2 border-indigo-100 shrink-0">
+            <img :src="modelValue.description" class="w-full h-full object-cover">
+          </div>
+          <div v-else class="w-20 h-20 rounded-xl bg-slate-100 border-2 border-dashed border-slate-200 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
             </svg>
-          </span>
+          </div>
+          <div class="flex-1">
+            <input type="file" @change="handleFileUpload" class="hidden" id="photo-upload" accept="image/*">
+            <label for="photo-upload" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg cursor-pointer transition-all disabled:opacity-50">
+              {{ isUploading ? 'Uploading...' : 'Unggah Foto' }}
+            </label>
+            <p class="text-[10px] text-slate-400 mt-1">Gunakan foto terbaik sebagai cover destinasi.</p>
+          </div>
         </div>
       </div>
-    </div>
+
+      <!-- Alamat -->
+      <div class="space-y-1.5">
+        <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider ml-1">Alamat Lengkap</label>
+        <textarea 
+          :value="modelValue.address"
+          @input="e => updateField('address', (e.target as HTMLTextAreaElement).value)"
+          rows="2"
+          class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-600 transition-all text-xs font-bold text-slate-600 outline-none"
+          placeholder="Alamat objek..."></textarea>
+      </div>
+    </template>
+
+    <!-- BLOG TAB -->
+    <template v-else>
+      <div class="space-y-4 h-full flex flex-col">
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider ml-1">Konten Ulasan Destinasi (Blog)</label>
+          <div class="flex-1 min-h-[300px] border border-slate-200 rounded-xl overflow-hidden">
+            <QuillEditor 
+              :content="blogContent.content"
+              contentType="html"
+              @update:content="val => emit('update:blogContent', { ...blogContent, content: val })"
+              theme="snow" 
+              toolbar="minimal"
+              placeholder="Tuliskan ulasan mendalam tentang destinasi ini..."
+              class="h-full"
+            />
+          </div>
+
+        </div>
+      </div>
+    </template>
   </div>
 </template>
+

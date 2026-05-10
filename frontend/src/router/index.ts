@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import MainLayout from '@/layouts/MainLayout.vue'
+import AdminLayout from '@/layouts/AdminLayout.vue'
+import ContributorLayout from '@/layouts/ContributorLayout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,12 +37,48 @@ const router = createRouter({
         },
       ],
     },
+    // Admin pages - wrapped inside AdminLayout
+    {
+      path: '/admin',
+      component: AdminLayout,
+      meta: { requiresAuth: true, requiresAdmin: true },
+      children: [
+        {
+          path: 'categories',
+          name: 'admin-categories',
+          component: () => import('@/features/admin/CategoriesPage.vue'),
+        },
+        {
+          path: 'users',
+          name: 'admin-users',
+          component: () => import('@/features/admin/UsersPage.vue'),
+        },
+      ],
+    },
+    // Contributor pages - wrapped inside ContributorLayout
+    {
+      path: '/contributor',
+      component: ContributorLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'dashboard',
+          name: 'contributor-dashboard',
+          component: () => import('@/features/dashboard/ContributorDashboard.vue'),
+        },
+        {
+          path: 'map',
+          name: 'contributor-map',
+          component: () => import('@/features/dashboard/DashboardPage.vue'),
+        },
+      ],
+    },
   ],
 })
 
 router.beforeEach((to) => {
   const authStore = useAuthStore()
-  
+
   if (to.meta.requiresAuth && !authStore.isAuthenticated()) {
     return { name: 'login' }
   }

@@ -116,6 +116,17 @@ func (s *Service) GetMe(userID string) (*User, error) {
 	return user, nil
 }
 
+func (s *Service) GetUsers() ([]User, error) {
+	users, err := s.repo.FindAllUsers(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	for i := range users {
+		s.prepareUser(&users[i])
+	}
+	return users, nil
+}
+
 func (s *Service) UpdatePassword(userID string, req UpdatePasswordReq) error {
 	user, err := s.repo.FindByID(context.Background(), userID)
 	if err != nil {

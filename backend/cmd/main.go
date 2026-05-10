@@ -7,7 +7,9 @@ import (
 	"backend/internal/modules/auth"
 	"backend/internal/modules/points"
 	"backend/internal/router"
+	"backend/pkg/upload"
 	"github.com/gofiber/fiber/v3"
+
 	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"log"
@@ -22,9 +24,15 @@ func main() {
 	authServ := auth.NewService(authRepo, cfg)
 	authHand := auth.NewHandler(authServ)
 
+	cldService, err := upload.NewCloudinaryService()
+	if err != nil {
+		log.Printf("Warning: Failed to initialize Cloudinary: %v", err)
+	}
+
 	pointsRepo := points.NewRepository(db)
 	pointsServ := points.NewService(pointsRepo)
-	pointsHand := points.NewHandler(pointsServ)
+	pointsHand := points.NewHandler(pointsServ, cldService)
+
 
 	authMiddleware := middleware.AuthRequired(cfg)
 

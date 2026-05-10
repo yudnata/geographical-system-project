@@ -61,3 +61,9 @@ type UpdatePointReq struct {
 	IsActive          bool    `json:"is_active"`
 	Status            string  `json:"status"` // draft or pending
 }
+
+type UpsertBlogReq struct {
+	Title      string  `json:"title"`
+	Content    string  `json:"content"`
+	CoverPhoto *string `json:"cover_photo"`
+}
