@@ -86,10 +86,11 @@ func (r *Repository) UpdateSSO(ctx context.Context, id, provider, ssoId, avatarU
 	return err
 }
 
-func (r *Repository) UpdateProfile(ctx context.Context, id, fullName, phone string) error {
-	_, err := r.db.Exec(ctx, `UPDATE users SET full_name=$1, phone=$2, is_profile_completed=true WHERE id=$3`, fullName, phone, id)
+func (r *Repository) UpdateProfile(ctx context.Context, id, fullName, phone, avatarURL string) error {
+	_, err := r.db.Exec(ctx, `UPDATE users SET full_name=$1, phone=$2, avatar_url=$3, is_profile_completed=true WHERE id=$4`, fullName, phone, avatarURL, id)
 	return err
 }
+
 
 func (r *Repository) UpdatePassword(ctx context.Context, id, passwordHash string) error {
 	_, err := r.db.Exec(ctx, `UPDATE users SET password=$1 WHERE id=$2`, passwordHash, id)

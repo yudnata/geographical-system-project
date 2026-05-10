@@ -20,14 +20,15 @@ func main() {
 	db := database.Connect(cfg.DatabaseURL)
 	database.Migrate(cfg.DatabaseURL)
 
-	authRepo := auth.NewRepository(db)
-	authServ := auth.NewService(authRepo, cfg)
-	authHand := auth.NewHandler(authServ)
-
 	cldService, err := upload.NewCloudinaryService()
 	if err != nil {
 		log.Printf("Warning: Failed to initialize Cloudinary: %v", err)
 	}
+
+	authRepo := auth.NewRepository(db)
+	authServ := auth.NewService(authRepo, cfg)
+	authHand := auth.NewHandler(authServ, cldService)
+
 
 	pointsRepo := points.NewRepository(db)
 	pointsServ := points.NewService(pointsRepo)

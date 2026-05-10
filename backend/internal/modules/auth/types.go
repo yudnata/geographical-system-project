@@ -18,9 +18,11 @@ type User struct {
 }
 
 type UpdateProfileReq struct {
-	FullName string `json:"full_name"`
-	Phone    string `json:"phone"`
+	FullName  string `json:"full_name"`
+	Phone     string `json:"phone"`
+	AvatarURL string `json:"avatar_url"`
 }
+
 
 type RegisterReq struct {
 	Email    string `json:"email"`

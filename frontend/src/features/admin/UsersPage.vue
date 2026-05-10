@@ -50,8 +50,8 @@ const fetchUsers = async () => {
 }
 
 const roleBadge = (role: string) => {
-  if (role === 'admin') return 'bg-amber-100 text-amber-700 border-amber-200'
-  return 'bg-blue-100 text-blue-700 border-blue-200'
+  if (role === 'admin') return 'text-amber-600'
+  return 'text-blue-600'
 }
 
 const formatDate = (dateStr: string) => {
@@ -123,16 +123,17 @@ onMounted(fetchUsers)
                   </div>
                   <div>
                     <p class="text-sm font-black text-gray-900 tracking-tight">{{ user.full_name }}</p>
-                    <p v-if="!user.is_profile_completed" class="text-[10px] text-amber-600 font-bold uppercase tracking-widest mt-0.5">Profil belum lengkap</p>
-                    <p v-else class="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mt-0.5">Profil lengkap</p>
                   </div>
+
                 </div>
               </td>
               <td class="py-4 px-6 text-sm text-gray-600 font-medium">{{ user.email }}</td>
               <td class="py-4 px-6">
-                <span :class="['text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-wider', roleBadge(user.role)]">
-                  {{ user.role }}
+                <span :class="['text-[10px] font-black uppercase tracking-wider', roleBadge(user.role || 'contributor')]">
+                  {{ user.role || 'contributor' }}
                 </span>
+
+
               </td>
               <td class="py-4 px-6 text-xs text-gray-400 font-bold uppercase tracking-tighter">{{ formatDate(user.created_at) }}</td>
             </tr>

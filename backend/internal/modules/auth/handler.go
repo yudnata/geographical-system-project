@@ -2,15 +2,17 @@ package auth
 
 import (
 	"backend/pkg/response"
+	"backend/pkg/upload"
 	"github.com/gofiber/fiber/v3"
 )
 
 type Handler struct {
-	service *Service
+	service  *Service
+	uploader *upload.CloudinaryService
 }
 
-func NewHandler(s *Service) *Handler {
-	return &Handler{service: s}
+func NewHandler(s *Service, u *upload.CloudinaryService) *Handler {
+	return &Handler{service: s, uploader: u}
 }
 
 func (h *Handler) Register(c fiber.Ctx) error {
@@ -97,6 +99,26 @@ func (h *Handler) UpdatePassword(c fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response.Success("Password berhasil diperbarui", nil))
+}
+
+func (h *Handler) UploadAvatar(c fiber.Ctx) error {
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error("File tidak ditemukan"))
+	}
+
+	f, err := file.Open()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal membuka file"))
+	}
+	defer f.Close()
+
+	url, err := h.uploader.UploadImage(c.Context(), f, "avatars")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal mengunggah gambar"))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.Success("Berhasil mengunggah avatar", fiber.Map{"url": url}))
 }
 
 func (h *Handler) GetConfig(c fiber.Ctx) error {

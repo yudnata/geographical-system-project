@@ -75,8 +75,10 @@ func (s *Service) SSOLogin(input SSOLoginReq) (string, *User, error) {
 			SSOID:              &input.SSOID,
 			AvatarURL:          &input.AvatarURL,
 			IsProfileCompleted: false,
+			Role:               "contributor",
 			CreatedAt:          time.Now(),
 		}
+
 		if createErr := s.repo.Create(context.Background(), user); createErr != nil {
 			return "", nil, createErr
 		}
@@ -95,7 +97,7 @@ func (s *Service) UpdateProfile(userID string, input UpdateProfileReq) (*User, e
 		return nil, errors.New("Nama dan nomor telp wajib diisi")
 	}
 
-	err := s.repo.UpdateProfile(context.Background(), userID, input.FullName, input.Phone)
+	err := s.repo.UpdateProfile(context.Background(), userID, input.FullName, input.Phone, input.AvatarURL)
 	if err != nil {
 		return nil, err
 	}

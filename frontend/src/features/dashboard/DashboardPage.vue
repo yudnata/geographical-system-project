@@ -11,8 +11,9 @@ const notificationStore = useNotificationStore()
 
 onMounted(() => {
   uiStore.filterMyPoints = true
-  uiStore.isEditMode = true
+  uiStore.isEditMode = false
 })
+
 
 const handleMapClick = (data: { lat: number; lng: number; address?: string }) => {
   notificationStore.info('Membuka form...')
@@ -21,9 +22,10 @@ const handleMapClick = (data: { lat: number; lng: number; address?: string }) =>
     name: '',
     latitude: data.lat,
     longitude: data.lng,
-    type_id: 1,
+    category_id: 1,
     address: data.address || '',
   })
+
 }
 </script>
 

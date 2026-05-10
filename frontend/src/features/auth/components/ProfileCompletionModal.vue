@@ -6,14 +6,14 @@ import { useNotificationStore } from '@/stores/notifications'
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
 
+const fullName = ref(authStore.user?.full_name || '')
 const phone = ref('')
-const institution = ref('')
 const isLoading = ref(false)
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 
 const submitProfile = async () => {
-  if (!phone.value || !institution.value) {
+  if (!fullName.value || !phone.value) {
     notificationStore.warning("Harap lengkapi semua data.")
     return
   }
@@ -27,9 +27,8 @@ const submitProfile = async () => {
         'Authorization': `Bearer ${authStore.token}`
       },
       body: JSON.stringify({
-        name: authStore.user?.name || '',
-        phone: phone.value,
-        institution: institution.value
+        full_name: fullName.value,
+        phone: phone.value
       })
     })
 
@@ -47,6 +46,7 @@ const submitProfile = async () => {
     isLoading.value = false
   }
 }
+
 </script>
 
 <template>
@@ -61,11 +61,17 @@ const submitProfile = async () => {
 
       <div class="p-6">
         <p class="text-sm text-gray-600 mb-5">
-          Selamat datang <strong>{{ authStore.user?.name }}</strong>! <br />
+          Selamat datang <strong>{{ authStore.user?.full_name }}</strong>! <br />
           Untuk pengalaman yang lebih baik, kami memerlukan tambahan informasi kontak Anda. Kami jamin data Anda aman.
         </p>
 
         <form @submit.prevent="submitProfile" class="space-y-4">
+
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Nama Lengkap</label>
+            <input v-model="fullName" type="text" placeholder="Masukkan nama lengkap Anda" required
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm outline-none" />
+          </div>
 
           <div>
             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Nomor WhatsApp / HP</label>
@@ -73,12 +79,6 @@ const submitProfile = async () => {
               class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm outline-none" />
           </div>
 
-
-          <div>
-            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Instansi / Pekerjaan</label>
-            <input v-model="institution" type="text" placeholder="Misal: Bappeda Bali / Wiraswasta" required
-              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm outline-none" />
-          </div>
 
 
           <div class="pt-4 flex justify-end">

@@ -11,7 +11,7 @@ const authStore = useAuthStore()
 const explorerItems = [
   {
     path: '/',
-    name: 'Peta Publik',
+    name: 'Eksplorasi Budaya',
     icon: 'M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z',
   },
 ]
@@ -21,9 +21,10 @@ const contributionItems = computed(() => {
   return [
     {
       path: '/dashboard',
-      name: 'Editor Peta',
+      name: 'Kontribusi Saya',
       icon: 'M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125',
     },
+
     {
       path: '/contributor/dashboard',
       name: 'Status Kontribusi',
@@ -36,7 +37,7 @@ const managementItems = computed(() => {
   const items = [
     {
       path: '/tabular',
-      name: 'Tabel Master',
+      name: 'Pustaka Data',
       icon: 'M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 011.875 1.875v11.25a1.875 1.875 0 01-1.875 1.875H5.625a1.875 1.875 0 01-1.875 1.875H5.625a1.875 1.875 0 01-1.875-1.875V6.375c0-1.036.84-1.875 1.875-1.875z',
     }
   ]
@@ -96,7 +97,7 @@ const isItemActive = (path: string) => {
     <!-- Contribution Section -->
     <div v-if="authStore.user" class="space-y-1">
       <p
-        class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pl-3 mb-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100 whitespace-nowrap text-center group-hover:text-left">
+        class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pl-[22px] mb-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100 whitespace-nowrap">
         Kontribusi
       </p>
       <RouterLink v-for="item in contributionItems" :key="item.path" :to="item.path" :class="[
@@ -119,7 +120,7 @@ const isItemActive = (path: string) => {
     <!-- Management Section -->
     <div v-if="authStore.user" class="space-y-1">
       <p
-        class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pl-3 mb-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100 whitespace-nowrap text-center group-hover:text-left">
+        class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pl-[22px] mb-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100 whitespace-nowrap">
         Manajemen
       </p>
       <RouterLink v-for="item in managementItems" :key="item.path" :to="item.path" :class="[

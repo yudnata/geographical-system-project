@@ -11,10 +11,13 @@ const route = useRoute()
 const uiStore = useMapUIStore()
 
 const pageTitle = computed(() => {
-  if (route.path === '/') return 'Peta Publik'
-  if (route.path === '/dashboard') return 'Peta Author'
-  if (route.path === '/tabular') return 'Tabel Data Master'
-  return 'Sistem Informasi Geografis'
+  if (route.path === '/') return 'Eksplorasi Budaya Bali'
+  if (route.path === '/dashboard') return 'Kontribusi Saya'
+  if (route.path === '/tabular') return 'Pustaka Data Master'
+  if (route.path === '/admin/verification') return 'Verifikasi Objek'
+  if (route.path === '/admin/categories') return 'Kelola Kategori'
+  if (route.path === '/admin/users') return 'Manajemen Tim'
+  return 'Budaya Bali: Digital Mapping'
 })
 
 const isDashboard = computed(() => route.path === '/dashboard')
