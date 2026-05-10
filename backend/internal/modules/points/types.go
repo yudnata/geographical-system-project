@@ -67,3 +67,9 @@ type UpsertBlogReq struct {
 	Content    string  `json:"content"`
 	CoverPhoto *string `json:"cover_photo"`
 }
+
+type VerifyPointReq struct {
+	Status        string `json:"status"` // approved or rejected
+	RejectionNote string `json:"rejection_note"`
+}
+

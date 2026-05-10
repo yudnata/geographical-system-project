@@ -51,6 +51,15 @@ const handleLogout = () => {
           Pengguna
         </RouterLink>
 
+        <RouterLink to="/admin/verification" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all"
+          active-class="!text-white !bg-amber-500/15 !text-amber-300">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Verifikasi Konten
+        </RouterLink>
+
+
         <div class="border-t border-white/5 my-3"></div>
         <p class="text-[10px] font-semibold text-white/30 uppercase tracking-widest px-3 mb-2">Aplikasi</p>
 

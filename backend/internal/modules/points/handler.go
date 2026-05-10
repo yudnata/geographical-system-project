@@ -198,7 +198,7 @@ func (h *Handler) UpsertBlog(c fiber.Ctx) error {
 func (h *Handler) Upload(c fiber.Ctx) error {
 	fileHeader, err := c.FormFile("image")
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.Error("File tidak ditemukan"))
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error("Gambar tidak ditemukan"))
 	}
 
 	file, err := fileHeader.Open()
@@ -207,11 +207,40 @@ func (h *Handler) Upload(c fiber.Ctx) error {
 	}
 	defer file.Close()
 
-	folder := c.FormValue("folder", "points")
-	url, err := h.uploader.UploadImage(c.Context(), file, folder)
+	url, err := h.uploader.UploadImage(c.Context(), file, "points")
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal mengunggah gambar: " + err.Error()))
+		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal mengunggah gambar"))
 	}
 
 	return c.JSON(response.Success("Gambar berhasil diunggah", fiber.Map{"url": url}))
+}
+
+func (h *Handler) GetPending(c fiber.Ctx) error {
+	points, err := h.service.GetPending(c.Context())
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal mengambil data"))
+	}
+	return c.JSON(response.Success("Data pengajuan berhasil diambil", points))
+}
+
+func (h *Handler) Verify(c fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error("ID tidak valid"))
+	}
+
+	var req VerifyPointReq
+	if err := c.Bind().Body(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error("Format input tidak valid"))
+	}
+
+	if req.Status != "approved" && req.Status != "rejected" {
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error("Status harus approved atau rejected"))
+	}
+
+	if err := h.service.Verify(c.Context(), id, req.Status, req.RejectionNote); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.Error("Gagal memverifikasi data"))
+	}
+
+	return c.JSON(response.Success("Data berhasil diverifikasi", nil))
 }

@@ -12,6 +12,9 @@ func RegisterRoutes(router fiber.Router, h *Handler, authMiddleware fiber.Handle
 	pts.Delete("/:id", authMiddleware, h.Delete)
 	pts.Get("/me", authMiddleware, h.GetMy)
 	pts.Get("/", h.GetAll)
+	pts.Get("/pending", authMiddleware, middleware.RequireRole("admin"), h.GetPending)
+	pts.Post("/:id/verify", authMiddleware, middleware.RequireRole("admin"), h.Verify)
+
 
 	pts.Get("/:id/blog", h.GetBlog)
 	pts.Put("/:id/blog", authMiddleware, h.UpsertBlog)

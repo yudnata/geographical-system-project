@@ -199,3 +199,42 @@ func (r *Repository) GetBlogByPointID(ctx context.Context, pointID int) (*Blog, 
 	}
 	return &b, nil
 }
+
+func (r *Repository) GetPending(ctx context.Context) ([]MapPoint, error) {
+	query := `
+		SELECT gp.id, gp.category_id, gp.name, gp.latitude, gp.longitude, gp.address, gp.owner_id, COALESCE(u.name, 'User'),
+		gp.tahun_berdiri, gp.status_kepemilikan, gp.description, gp.is_active, gp.status, gp.rejection_note, gp.created_at, gp.updated_at
+		FROM map_points gp
+		LEFT JOIN users u ON gp.owner_id = u.id
+		WHERE gp.status = 'pending'
+		ORDER BY gp.created_at ASC
+	`
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	points := []MapPoint{}
+	for rows.Next() {
+		var p MapPoint
+		err := rows.Scan(
+			&p.ID, &p.CategoryID, &p.Name, &p.Latitude, &p.Longitude,
+			&p.Address, &p.OwnerID, &p.OwnerName, &p.TahunBerdiri, &p.StatusKepemilikan,
+			&p.Description, &p.IsActive, &p.Status, &p.RejectionNote, &p.CreatedAt, &p.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		points = append(points, p)
+	}
+	return points, nil
+}
+
+func (r *Repository) Verify(ctx context.Context, id int, status string, rejectionNote *string) error {
+	_, err := r.db.Exec(ctx,
+		`UPDATE map_points SET status=$1, rejection_note=$2, updated_at=NOW() WHERE id=$3`,
+		status, rejectionNote, id)
+	return err
+}
+

@@ -53,6 +53,11 @@ const router = createRouter({
           name: 'admin-users',
           component: () => import('@/features/admin/UsersPage.vue'),
         },
+        {
+          path: 'verification',
+          name: 'admin-verification',
+          component: () => import('@/features/admin/VerificationPage.vue'),
+        },
       ],
     },
     // Contributor pages - wrapped inside ContributorLayout

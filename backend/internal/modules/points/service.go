@@ -130,3 +130,16 @@ func (s *Service) UpsertBlog(ctx context.Context, pointID int, req UpsertBlogReq
 func (s *Service) GetBlog(ctx context.Context, pointID int) (*Blog, error) {
 	return s.repo.GetBlogByPointID(ctx, pointID)
 }
+
+func (s *Service) GetPending(ctx context.Context) ([]MapPoint, error) {
+	return s.repo.GetPending(ctx)
+}
+
+func (s *Service) Verify(ctx context.Context, id int, status string, rejectionNote string) error {
+	var note *string
+	if status == "rejected" && rejectionNote != "" {
+		note = &rejectionNote
+	}
+	return s.repo.Verify(ctx, id, status, note)
+}
+
