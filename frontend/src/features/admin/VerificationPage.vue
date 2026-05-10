@@ -166,8 +166,10 @@ const getCategoryIcon = (id?: number) => {
               </div>
 
               <div class="flex items-center gap-4 pt-5 border-t border-gray-50 mt-auto">
-                <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors duration-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div
+                  class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors duration-500 overflow-hidden border border-gray-100 shadow-inner">
+                  <img v-if="point.owner_avatar" :src="point.owner_avatar" class="w-full h-full object-cover">
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
@@ -178,7 +180,7 @@ const getCategoryIcon = (id?: number) => {
               </div>
 
               <button @click="openPreview(point)"
-                class="mt-6 w-full py-3 bg-gray-900 hover:bg-primary text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all duration-300 shadow-lg shadow-gray-200">
+                class="mt-6 w-full py-3 bg-primary hover:bg-emerald-800 text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all duration-300">
                 Tinjau Detail
               </button>
             </div>
@@ -199,8 +201,8 @@ const getCategoryIcon = (id?: number) => {
               </svg>
             </div>
             <div>
-              <h3 class="text-xl font-black text-gray-900 tracking-tight">Peninjauan Pengajuan</h3>
-              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">ID: #{{ selectedPoint.id }} • Kontributor: {{ selectedPoint.owner_name }}</p>
+              <h3 class="text-xl font-black text-gray-900 tracking-tight">Tinjau Pengajuan</h3>
+              <p class="text-[10px] text-gray-400 font-bold tracking-widest mt-1">ID: #{{ selectedPoint.id }} • Kontributor: {{ selectedPoint.owner_name }}</p>
             </div>
           </div>
           <button @click="isPreviewOpen = false" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 text-gray-400 hover:text-gray-900 transition-colors">
@@ -213,17 +215,6 @@ const getCategoryIcon = (id?: number) => {
         <div class="flex-1 overflow-y-auto p-8 lg:p-12 custom-scrollbar">
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
             <div class="lg:col-span-4 space-y-10">
-              <div class="aspect-video rounded-3xl bg-gray-100 overflow-hidden shadow-inner border border-gray-100">
-                <img v-if="selectedPoint.cover_image" :src="selectedPoint.cover_image" class="w-full h-full object-cover">
-                <div v-else class="w-full h-full flex flex-col items-center justify-center text-gray-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span class="text-[10px] font-black uppercase tracking-widest">Tanpa Foto</span>
-                </div>
-              </div>
-
               <div class="space-y-8">
                 <div v-for="info in [
                   { label: 'Nama Objek', value: selectedPoint.name, icon: 'M3.75 6h16.5M3.75 12h16.5m-16.5 5.25h16.5', color: 'text-primary' },
@@ -245,21 +236,8 @@ const getCategoryIcon = (id?: number) => {
             </div>
 
             <div class="lg:col-span-8">
-              <div class="bg-gray-50/50 rounded-[40px] p-8 lg:p-12 border border-gray-100 min-h-full">
-                <p class="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
-                  <span class="w-8 h-px bg-primary/30"></span>
-                  Pratinjau Artikel
-                </p>
-
-                <h1 class="text-3xl lg:text-4xl font-black text-gray-900 tracking-tight leading-tight mb-8">
-                  {{ selectedPoint.name }}
-                </h1>
-
-                <div v-if="selectedPoint.cover_image" class="aspect-video rounded-2xl overflow-hidden mb-8 border border-gray-100">
-                  <img :src="selectedPoint.cover_image" class="w-full h-full object-cover" alt="Cover Preview">
-                </div>
-
-                <div v-if="blogData?.content" class="prose prose-slate max-w-none prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed font-medium" v-html="blogData.content"></div>
+              <div class="bg-gray-50/50 rounded-[40px] p-8 lg:p-16 border border-gray-100 min-h-full">
+                <div v-if="blogData?.content" class="prose-bali max-w-none" v-html="blogData.content"></div>
                 <div v-else class="flex flex-col items-center justify-center py-12 text-gray-300">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mb-3 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -321,5 +299,46 @@ const getCategoryIcon = (id?: number) => {
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.1);
+}
+
+/* Base Prose Styling for Bali Culture App */
+:deep(.prose-bali),
+:deep(.ql-editor) {
+  font-family: 'Urbanist', sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.8 !important;
+  color: #334155 !important;
+}
+
+:deep(.prose-bali > :first-child) {
+  margin-top: 0 !important;
+}
+
+:deep(.prose-bali h1),
+:deep(.ql-editor h1) {
+  font-size: 2.25rem !important;
+  font-weight: 800 !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 1rem !important;
+  letter-spacing: -0.025em !important;
+}
+
+:deep(.prose-bali h2),
+:deep(.ql-editor h2) {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  margin-top: 1.25rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+:deep(.prose-bali p),
+:deep(.ql-editor p) {
+  margin-bottom: 1.25rem !important;
+}
+
+:deep(.prose-bali img) {
+  border-radius: 1.5rem !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1) !important;
+  margin: 2rem 0 !important;
 }
 </style>

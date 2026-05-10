@@ -53,12 +53,27 @@ const handleDelete = () => {
   <div class="p-0 font-sans flex flex-col h-full bg-white">
     <div v-if="point.cover_image" class="h-48 w-full bg-slate-100 relative">
       <img :src="point.cover_image" class="w-full h-full object-cover">
+      
+      <!-- Status Badge Overlay -->
+      <div class="absolute top-4 left-6 z-10 flex gap-2">
+        <span v-if="point.status === 'draft'" class="bg-slate-900/60 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-[0.1em] px-2.5 py-1 rounded-full border border-white/20">Draft</span>
+        <span v-if="point.status === 'pending'" class="bg-amber-500 text-white text-[9px] font-black uppercase tracking-[0.1em] px-2.5 py-1 rounded-full shadow-lg">Pending</span>
+        <span v-if="point.status === 'approved'" class="bg-emerald-500 text-white text-[9px] font-black uppercase tracking-[0.1em] px-2.5 py-1 rounded-full shadow-lg">Approved</span>
+      </div>
+
       <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent"></div>
       <h4 class="absolute bottom-5 left-6 right-6 font-black text-white text-2xl leading-tight drop-shadow-lg">{{ point.name }}</h4>
     </div>
 
     <div class="p-6 flex-1 flex flex-col">
-      <h4 v-if="!point.cover_image" class="font-black text-slate-900 text-2xl mb-5">{{ point.name }}</h4>
+      <div v-if="!point.cover_image" class="flex items-center justify-between gap-4 mb-5">
+        <h4 class="font-black text-slate-900 text-2xl">{{ point.name }}</h4>
+        <div class="shrink-0">
+          <span v-if="point.status === 'draft'" class="bg-slate-100 text-slate-500 text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-md border border-slate-200">Draft</span>
+          <span v-if="point.status === 'pending'" class="bg-amber-100 text-amber-600 text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-md border border-amber-200">Pending</span>
+          <span v-if="point.status === 'approved'" class="bg-emerald-100 text-emerald-600 text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-md border border-emerald-200">Approved</span>
+        </div>
+      </div>
 
       <div class="space-y-4 text-sm text-slate-600 mb-6">
         <div class="flex items-start gap-4">

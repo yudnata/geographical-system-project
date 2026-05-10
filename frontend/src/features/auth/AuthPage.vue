@@ -43,7 +43,7 @@ const handleEmailSubmit = async () => {
     if (result.success) {
       if (mode.value === 'login') {
         notificationStore.success('Selamat datang kembali!')
-        router.push('/dashboard')
+        router.push('/')
       } else {
         notificationStore.success('Akun berhasil dibuat! Silakan login.')
         mode.value = 'login'
@@ -75,7 +75,7 @@ const loginWithGoogle = async () => {
 
     if (result.success) {
       notificationStore.success('Selamat datang kembali!')
-      router.push('/dashboard')
+      router.push('/')
     } else {
       errorMsg.value = result.message || 'Login SSO gagal di sisi server.'
     }
