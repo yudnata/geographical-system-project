@@ -26,11 +26,11 @@ const filteredPoints = computed(() => {
 
 const getStatusBadge = (status?: string) => {
   switch (status) {
-    case 'approved': return 'bg-emerald-100 text-emerald-700 border-emerald-200'
-    case 'pending': return 'bg-amber-100 text-amber-700 border-amber-200'
-    case 'rejected': return 'bg-rose-100 text-rose-700 border-rose-200'
-    case 'draft': return 'bg-slate-100 text-slate-600 border-slate-200'
-    default: return 'bg-slate-100 text-slate-600 border-slate-200'
+    case 'approved': return 'text-emerald-700 border-none'
+    case 'pending': return 'text-amber-700 border-none'
+    case 'rejected': return 'text-rose-700 border-none'
+    case 'draft': return 'text-slate-600 border-none'
+    default: return 'text-slate-600 border-none'
   }
 }
 
@@ -46,7 +46,6 @@ const getTypeName = (categoryId: number) => {
     'pt-6 pb-6 pr-6'
   ]">
     <div class="flex-1 flex flex-col bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.06)] border border-gray-100 overflow-hidden">
-      <!-- Header with Status Filters -->
       <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/40 shrink-0">
         <div class="flex items-center gap-2 bg-white/60 p-1 rounded-2xl border border-gray-100 shadow-sm">
           <button v-for="f in [
@@ -64,16 +63,8 @@ const getTypeName = (categoryId: number) => {
             {{ f.label }}
           </button>
         </div>
-
-        <div class="hidden md:block text-right">
-          <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Filtered</p>
-          <p class="text-xl font-black text-primary tracking-tighter">{{ filteredPoints.length }}</p>
-        </div>
       </div>
-
-      <!-- Content Scrollable -->
       <div class="flex-1 overflow-auto p-6 space-y-8">
-        <!-- Stats Summary -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div v-for="stat in [
             { label: 'Total Pengajuan', count: store.points.filter(p => p.owner_id === authStore.user?.id).length, color: 'primary' },
@@ -85,8 +76,6 @@ const getTypeName = (categoryId: number) => {
             <p class="text-3xl font-black text-gray-900 mt-2 tracking-tighter">{{ stat.count }}</p>
           </div>
         </div>
-
-        <!-- Table -->
         <div class="bg-white rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden flex flex-col">
           <table class="w-full text-left border-collapse min-w-max">
             <thead class="bg-gray-50/50 sticky top-0 z-10 border-b border-gray-100">
@@ -101,7 +90,9 @@ const getTypeName = (categoryId: number) => {
               <tr v-for="point in filteredPoints" :key="point.id" class="hover:bg-blue-50/40 transition-colors group">
                 <td class="px-6 py-5">
                   <div class="font-black text-gray-900 text-sm tracking-tight group-hover:text-primary transition-colors">{{ point.name }}</div>
-                  <div class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter mt-1">{{ point.latitude.toFixed(4) }}, {{ point.longitude.toFixed(4) }}</div>
+                  <div class="text-[10px] text-gray-400 font-bold tracking-tighter mt-1 line-clamp-1 max-w-[200px]" :title="point.address">
+                    {{ point.address || 'Alamat belum diisi' }}
+                  </div>
                 </td>
                 <td class="px-6 py-5">
                   <span class="text-[10px] font-black text-gray-500 bg-gray-100 px-3 py-1.5 rounded-xl uppercase tracking-wider shadow-sm">{{ getTypeName(point.category_id || 0) }}</span>

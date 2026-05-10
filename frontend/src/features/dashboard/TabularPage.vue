@@ -80,7 +80,6 @@ const handleDelete = (point: GeoPoint) => {
               <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-200">Nama Objek / Situs</th>
               <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-200">Kategori</th>
               <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-200">Estimasi Masa / Sejarah</th>
-              <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-200">Koordinat Spasial</th>
               <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-200">Status</th>
               <th class="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center border-b border-gray-200">Aksi</th>
             </tr>
@@ -98,12 +97,6 @@ const handleDelete = (point: GeoPoint) => {
                 </span>
               </td>
               <td class="py-5 px-6 text-xs text-gray-600 font-black border-b border-gray-50">{{ point.tahun_berdiri || '-' }}</td>
-              <td class="py-5 px-6 text-[10px] font-mono border-b border-gray-50">
-                <div class="flex flex-col gap-0.5">
-                  <span class="text-primary font-black">Lat: {{ point.latitude?.toFixed(5) }}</span>
-                  <span class="text-emerald-600 font-black">Lng: {{ point.longitude?.toFixed(5) }}</span>
-                </div>
-              </td>
               <td class="py-5 px-6 border-b border-gray-50">
                 <span :class="[getStatusLabel(point.status).class, 'text-[10px] font-black uppercase tracking-widest flex items-center gap-2']">
                   <span :class="[getStatusLabel(point.status).dot, 'w-1.5 h-1.5 rounded-full animate-pulse']"></span>
@@ -130,7 +123,7 @@ const handleDelete = (point: GeoPoint) => {
 
             </tr>
             <tr v-if="tabularPoints.length === 0">
-              <td colspan="7" class="py-20 text-center text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] italic">Data tidak ditemukan.</td>
+              <td colspan="6" class="py-20 text-center text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] italic">Data tidak ditemukan.</td>
             </tr>
           </tbody>
         </table>
