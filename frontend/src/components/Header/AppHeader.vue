@@ -21,7 +21,8 @@ const isBlurred = computed(() => {
 })
 
 const pageTitle = computed(() => {
-  if (route.path === '/') return 'Eksplorasi Budaya Bali'
+  if (route.path === '/') return 'Budaya Bali'
+  if (route.path === '/explore') return 'Eksplorasi Budaya Bali'
   if (route.path === '/dashboard') return 'Kontribusi Saya'
   if (route.path === '/tabular') return 'Pustaka Data Master'
   if (route.path === '/admin/verification') return 'Verifikasi Objek'
@@ -40,7 +41,7 @@ const isDashboard = computed(() => route.path === '/dashboard')
     { 'pointer-events-none': isBlurred }
   ]">
     <div :class="[
-      'flex-1 flex items-center justify-between bg-white border border-gray-100 px-6 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-300',
+      'flex-1 flex items-center justify-between bg-white border border-gray-100 px-6 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition-all duration-300',
       { 'blur-[4px] opacity-0': isBlurred }
     ]">
       <div class="flex items-center gap-4 shrink-0">

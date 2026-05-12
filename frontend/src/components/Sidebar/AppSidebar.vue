@@ -24,7 +24,7 @@ const isBlurred = computed(() => {
     :class="{ 'pointer-events-none': isBlurred }">
     <div class="absolute inset-y-0 -left-4 -right-8 z-[-1] cursor-pointer"></div>
     <div :class="[
-      'flex-1 flex flex-col bg-white border border-gray-100 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-300 overflow-hidden',
+      'flex-1 flex flex-col bg-white border border-gray-100 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition-all duration-300 overflow-hidden',
       { 'blur-[4px] opacity-0': isBlurred }
     ]">
       <SidebarBrand />

@@ -83,8 +83,12 @@ func (s *Service) SSOLogin(input SSOLoginReq) (string, *User, error) {
 			return "", nil, createErr
 		}
 	} else {
-		s.repo.UpdateSSO(context.Background(), user.ID, input.SSOProvider, input.SSOID, input.AvatarURL)
-		user.AvatarURL = &input.AvatarURL
+		finalAvatar := input.AvatarURL
+		if user.AvatarURL != nil && *user.AvatarURL != "" {
+			finalAvatar = *user.AvatarURL
+		}
+		s.repo.UpdateSSO(context.Background(), user.ID, input.SSOProvider, input.SSOID, finalAvatar)
+		user.AvatarURL = &finalAvatar
 	}
 
 	token, err := s.generateToken(user)

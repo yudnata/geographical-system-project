@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useMapPointsStore } from '@/stores/mapPoints'
 import { useMapUIStore } from '@/stores/mapUI'
 import type { GeoPoint } from '@/types/map'
 
 const store = useMapPointsStore()
 const uiStore = useMapUIStore()
+const router = useRouter()
+const route = useRoute()
 
 interface NominatimResult {
   display_name: string
@@ -19,7 +22,11 @@ const isSearchingAddress = ref(false)
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
 const handleSelectPoint = (point: GeoPoint) => {
-  uiStore.flyTo(point.latitude, point.longitude)
+  if (route.path === '/') {
+    router.push(`/blog/${point.id}`)
+  } else {
+    uiStore.flyTo(point.latitude, point.longitude)
+  }
   uiStore.searchQuery = ''
 }
 

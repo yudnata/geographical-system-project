@@ -18,6 +18,11 @@ const router = createRouter({
       children: [
         {
           path: '',
+          name: 'home',
+          component: () => import('@/features/home/HomePage.vue'),
+        },
+        {
+          path: 'explore',
           name: 'public-map',
           component: () => import('@/features/map/PublicMapPage.vue'),
         },
@@ -66,7 +71,6 @@ const router = createRouter({
         },
       ],
     },
-
   ],
 })
 
@@ -78,7 +82,7 @@ router.beforeEach((to) => {
   }
 
   if (to.meta.requiresAdmin && !authStore.isAdmin()) {
-    return { name: 'public-map' } // Redirect to home if not admin
+    return { name: 'public-map' }
   }
 })
 
