@@ -2,12 +2,12 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useAuthStore } from './auth'
 import { useNotificationStore } from './notifications'
-import { useMapUIStore } from './mapUI'
-import type { GeoPoint, ObjectType } from '@/types/map'
+import { useUIStore } from './uiStore'
+import type { GeoPoint, ObjectType } from '@/types/pointTypes'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 
-export const useMapPointsStore = defineStore('mapPoints', () => {
+export const usePointsStore = defineStore('points', () => {
   const points = ref<GeoPoint[]>([])
   const objectTypes = ref<ObjectType[]>([])
   const isModalOpen = ref(false)
@@ -84,7 +84,7 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
           points.value.push(savedPoint)
         }
 
-        const uiStore = useMapUIStore()
+        const uiStore = useUIStore()
         fetchPoints(false, uiStore.filterMyPoints)
 
         if (!silent) {
@@ -116,7 +116,7 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
       if (json.success) {
         points.value = points.value.filter((p) => p.id !== id)
 
-        const uiStore = useMapUIStore()
+        const uiStore = useUIStore()
         fetchPoints(false, uiStore.filterMyPoints)
 
         notificationStore.success('Data berhasil dihapus')
@@ -180,7 +180,7 @@ export const useMapPointsStore = defineStore('mapPoints', () => {
   }
 
   const filteredPoints = computed(() => {
-    const uiStore = useMapUIStore()
+    const uiStore = useUIStore()
     const authStore = useAuthStore()
 
     return points.value.filter((point) => {

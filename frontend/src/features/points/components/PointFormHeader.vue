@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useMapPointsStore } from '@/stores/mapPoints'
+import { usePointsStore } from '@/stores/pointsStore'
 
 defineProps<{
   isEdit: boolean
   activeTab: 'data' | 'blog'
 }>()
 
-const store = useMapPointsStore()
+const store = usePointsStore()
 </script>
 
 <template>

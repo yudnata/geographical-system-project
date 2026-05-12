@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useMapPointsStore } from '@/stores/mapPoints'
+import { usePointsStore } from '@/stores/pointsStore'
 
-const store = useMapPointsStore()
+const store = usePointsStore()
 const isExpanded = ref(true)
 
 const ICON_MAP: Record<string, string> = {
@@ -17,7 +17,6 @@ const ICON_MAP: Record<string, string> = {
   'museum': 'M4 22V10h16v12M2 10l10-8 10 8M9 14v4M15 14v4',
   'market': 'M3 3h18v2H3V3zm3 4v14h12V7H6zM10 7v14M14 7v14'
 }
-
 
 const getIconPath = (iconName?: string) => {
   if (!iconName) return 'M12 2v20M2 12h20'
@@ -50,7 +49,6 @@ const colors = [
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
             <path :d="getIconPath(type.icon)" />
           </svg>
-
         </div>
         <span class="text-[10px] font-bold text-gray-600 tracking-tight uppercase">{{ type.name }}</span>
       </div>

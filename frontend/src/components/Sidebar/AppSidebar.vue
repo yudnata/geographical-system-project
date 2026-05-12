@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useMapUIStore } from '@/stores/mapUI'
-import { useMapPointsStore } from '@/stores/mapPoints'
+import { useUIStore } from '@/stores/uiStore'
+import { usePointsStore } from '@/stores/pointsStore'
 import SidebarBrand from './SidebarBrand.vue'
 import SidebarNav from './SidebarNav.vue'
 import SidebarFooter from './SidebarFooter.vue'
 
-const uiStore = useMapUIStore()
-const pointsStore = useMapPointsStore()
+const uiStore = useUIStore()
+const pointsStore = usePointsStore()
 
 const isBlurred = computed(() => {
   return uiStore.isProfileModalOpen ||

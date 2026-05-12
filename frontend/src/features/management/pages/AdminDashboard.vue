@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useMapPointsStore } from '@/stores/mapPoints'
-import { useMapUIStore } from '@/stores/mapUI'
+import { usePointsStore } from '@/stores/pointsStore'
+import { useUIStore } from '@/stores/uiStore'
 import { useNotificationStore } from '@/stores/notifications'
-import MapContainer from '@/features/map/components/MapContainer.vue'
+import MapContainer from '@/features/explore/components/MapContainer.vue'
 
-const store = useMapPointsStore()
-const uiStore = useMapUIStore()
+const store = usePointsStore()
+const uiStore = useUIStore()
 const notificationStore = useNotificationStore()
 
 onMounted(() => {

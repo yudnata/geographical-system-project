@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useMapUIStore } from '@/stores/mapUI'
-import { useMapPointsStore } from '@/stores/mapPoints'
+import { useUIStore } from '@/stores/uiStore'
+import { usePointsStore } from '@/stores/pointsStore'
 import HeaderSearch from './HeaderSearch.vue'
 import HeaderCategoryFilter from './HeaderCategoryFilter.vue'
 import HeaderEditorControls from './HeaderEditorControls.vue'
 import HeaderUserInfo from './HeaderUserInfo.vue'
 
 const route = useRoute()
-const uiStore = useMapUIStore()
-const pointsStore = useMapPointsStore()
+const uiStore = useUIStore()
+const pointsStore = usePointsStore()
 
 const isBlurred = computed(() => {
   return uiStore.isProfileModalOpen ||

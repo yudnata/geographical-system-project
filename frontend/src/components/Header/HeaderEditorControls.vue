@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useMapUIStore } from '@/stores/mapUI'
+import { useUIStore } from '@/stores/uiStore'
 
-const uiStore = useMapUIStore()
+const uiStore = useUIStore()
 </script>
 
 <template>

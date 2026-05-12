@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
-import { useMapPointsStore } from '@/stores/mapPoints'
-import { useMapUIStore } from '@/stores/mapUI'
-import type { GeoPoint } from '@/types/map'
+import { usePointsStore } from '@/stores/pointsStore'
+import { useUIStore } from '@/stores/uiStore'
+import type { GeoPoint } from '@/types/pointTypes'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
-const store = useMapPointsStore()
-const uiStore = useMapUIStore()
+const store = usePointsStore()
+const uiStore = useUIStore()
 const authStore = useAuthStore()
 const router = useRouter()
 

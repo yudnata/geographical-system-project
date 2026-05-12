@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useMapUIStore } from '@/stores/mapUI'
+import { useUIStore } from '@/stores/uiStore'
 import LogoutConfirmModal from './LogoutConfirmModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const uiStore = useMapUIStore()
+const uiStore = useUIStore()
 
 const handleLogout = () => {
   uiStore.isLogoutModalOpen = true

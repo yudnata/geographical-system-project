@@ -2,9 +2,9 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotificationStore } from '@/stores/notifications'
-import { useMapUIStore } from '@/stores/mapUI'
-import { useMapPointsStore } from '@/stores/mapPoints'
-import type { GeoPoint } from '@/types/map'
+import { useUIStore } from '@/stores/uiStore'
+import { usePointsStore } from '@/stores/pointsStore'
+import type { GeoPoint } from '@/types/pointTypes'
 
 import 'leaflet/dist/leaflet.css'
 import * as L from 'leaflet'
@@ -24,8 +24,8 @@ interface BlogDetail {
 const route = useRoute()
 const router = useRouter()
 const notificationStore = useNotificationStore()
-const uiStore = useMapUIStore()
-const mapPointsStore = useMapPointsStore()
+const uiStore = useUIStore()
+const mapPointsStore = usePointsStore()
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 
 const getCategoryName = (id: number) => {

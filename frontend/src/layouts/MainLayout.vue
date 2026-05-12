@@ -4,11 +4,11 @@ import { RouterView, RouterLink, useRoute } from 'vue-router'
 import AppSidebar from '@/components/Sidebar/AppSidebar.vue'
 import AppHeader from '@/components/Header/AppHeader.vue'
 import { useAuthStore } from '@/stores/auth'
-import { useMapUIStore } from '@/stores/mapUI'
+import { useUIStore } from '@/stores/uiStore'
 
 const route = useRoute()
 const authStore = useAuthStore()
-const uiStore = useMapUIStore()
+const uiStore = useUIStore()
 
 watch(() => route.path, () => {
   uiStore.setSelectedPreviewPoint(null)

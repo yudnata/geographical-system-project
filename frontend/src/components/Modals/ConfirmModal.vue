@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useMapPointsStore } from '@/stores/mapPoints'
+import { usePointsStore } from '@/stores/pointsStore'
 
-const store = useMapPointsStore()
+const store = usePointsStore()
 const isLoading = ref(false)
 
 const handleConfirm = async () => {

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useMapPointsStore } from '@/stores/mapPoints'
-import { useMapUIStore } from '@/stores/mapUI'
+import { usePointsStore } from '@/stores/pointsStore'
+import { useUIStore } from '@/stores/uiStore'
 
 
-const store = useMapPointsStore()
-const uiStore = useMapUIStore()
+const store = usePointsStore()
+const uiStore = useUIStore()
 
 const isOpen = ref(false)
 const dropdownRef = ref<HTMLElement | null>(null)

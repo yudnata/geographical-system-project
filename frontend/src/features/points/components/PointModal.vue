@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
-import { useMapPointsStore } from '@/stores/mapPoints'
-import type { GeoPoint } from '@/types/map'
+import { usePointsStore } from '@/stores/pointsStore'
+import type { GeoPoint } from '@/types/pointTypes'
 import { useNotificationStore } from '@/stores/notifications'
+import { useUIStore } from '@/stores/uiStore'
 
-import PointFormHeader from './PointForm/PointFormHeader.vue'
-import PointFormFields from './PointForm/PointFormFields.vue'
-import PointFormActions from './PointForm/PointFormActions.vue'
+import PointFormHeader from './PointFormHeader.vue'
+import PointForm from './PointForm.vue'
+import PointFormActions from './PointFormActions.vue'
 
-import { useMapUIStore } from '@/stores/mapUI'
-
-const store = useMapPointsStore()
-const uiStore = useMapUIStore()
+const store = usePointsStore()
+const uiStore = useUIStore()
 const notificationStore = useNotificationStore()
 
 const getDefaultForm = (): Partial<GeoPoint> => ({
@@ -139,7 +138,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 
         <PointFormHeader :is-edit="!!formData.id" :active-tab="activeTab" />
 
-        <PointFormFields v-model="formData" v-model:blog-content="blogContent" :active-tab="activeTab" />
+        <PointForm v-model="formData" v-model:blog-content="blogContent" :active-tab="activeTab" />
 
         <PointFormActions :is-edit="!!formData.id" :is-submitting="isSubmitting" :active-tab="activeTab" @submit="submitForm" @next="goToNextTab" @back="activeTab = 'data'" />
 

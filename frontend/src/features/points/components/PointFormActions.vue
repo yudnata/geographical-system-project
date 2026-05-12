@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useMapPointsStore } from '@/stores/mapPoints'
+import { usePointsStore } from '@/stores/pointsStore'
 
 defineProps<{
   isEdit: boolean
@@ -8,7 +8,7 @@ defineProps<{
 }>()
 
 const emit = defineEmits(['submit', 'next', 'back'])
-const store = useMapPointsStore()
+const store = usePointsStore()
 </script>
 
 <template>

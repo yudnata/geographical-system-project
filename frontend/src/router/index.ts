@@ -24,18 +24,18 @@ const router = createRouter({
         {
           path: 'explore',
           name: 'public-map',
-          component: () => import('@/features/map/PublicMapPage.vue'),
+          component: () => import('@/features/explore/PublicMapPage.vue'),
         },
         {
           path: 'dashboard',
           name: 'dashboard',
-          component: () => import('@/features/dashboard/DashboardPage.vue'),
+          component: () => import('@/features/management/pages/AdminDashboard.vue'),
           meta: { requiresAuth: true },
         },
         {
           path: 'tabular',
           name: 'tabular-view',
-          component: () => import('@/features/dashboard/TabularPage.vue'),
+          component: () => import('@/features/points/pages/PointListPage.vue'),
           meta: { requiresAuth: true },
         },
         {
@@ -66,7 +66,7 @@ const router = createRouter({
         {
           path: 'contributor/dashboard',
           name: 'contributor-dashboard',
-          component: () => import('@/features/dashboard/ContributorDashboard.vue'),
+          component: () => import('@/features/management/pages/ContributorDashboard.vue'),
           meta: { requiresAuth: true },
         },
       ],

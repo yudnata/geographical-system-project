@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useMapUIStore } from '@/stores/mapUI'
-import MapContainer from '@/features/map/components/MapContainer.vue'
+import { useUIStore } from '@/stores/uiStore'
+import MapContainer from '@/features/explore/components/MapContainer.vue'
 
-const uiStore = useMapUIStore()
+const uiStore = useUIStore()
 
 uiStore.isEditMode = false
 uiStore.filterMyPoints = false

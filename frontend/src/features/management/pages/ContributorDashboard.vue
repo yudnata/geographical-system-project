@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { onMounted, computed, ref } from 'vue'
-import { useMapPointsStore } from '@/stores/mapPoints'
-import { useMapUIStore } from '@/stores/mapUI'
+import { usePointsStore } from '@/stores/pointsStore'
+import { useUIStore } from '@/stores/uiStore'
 import { useAuthStore } from '@/stores/auth'
 
-const store = useMapPointsStore()
-const uiStore = useMapUIStore()
+const store = usePointsStore()
+const uiStore = useUIStore()
 const authStore = useAuthStore()
 
 const activeFilter = ref<'all' | 'draft' | 'pending' | 'approved' | 'rejected'>('all')

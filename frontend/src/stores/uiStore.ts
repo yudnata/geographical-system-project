@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { GeoPoint } from '@/types/map'
+import type { GeoPoint } from '@/types/pointTypes'
 
-export const useMapUIStore = defineStore('mapUI', () => {
+export const useUIStore = defineStore('ui', () => {
   const isSidebarExpanded = ref(false)
   const isProfileModalOpen = ref(false)
   const isLogoutModalOpen = ref(false)

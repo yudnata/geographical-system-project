@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, computed, ref } from 'vue'
-import { useMapPointsStore } from '@/stores/mapPoints'
-import { useMapUIStore } from '@/stores/mapUI'
+import { usePointsStore } from '@/stores/pointsStore'
+import { useUIStore } from '@/stores/uiStore'
 import { RouterLink } from 'vue-router'
-import type { GeoPoint } from '@/types/map'
+import type { GeoPoint } from '@/types/pointTypes'
 
-const store = useMapPointsStore()
-const uiStore = useMapUIStore()
+const store = usePointsStore()
+const uiStore = useUIStore()
 
 onMounted(async () => {
   await store.fetchCategories()

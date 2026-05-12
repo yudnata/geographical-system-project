@@ -4,13 +4,13 @@ import { ref, computed, watch } from 'vue'
 
 import { useAuthStore, type User } from '@/stores/auth'
 
-import { useMapUIStore } from '@/stores/mapUI'
-import { useMapPointsStore } from '@/stores/mapPoints'
+import { useUIStore } from '@/stores/uiStore'
+import { usePointsStore } from '@/stores/pointsStore'
 import { useNotificationStore } from '@/stores/notifications'
 
 const authStore = useAuthStore()
-const uiStore = useMapUIStore()
-const pointsStore = useMapPointsStore()
+const uiStore = useUIStore()
+const pointsStore = usePointsStore()
 const notificationStore = useNotificationStore()
 
 const fileInput = ref<HTMLInputElement | null>(null)

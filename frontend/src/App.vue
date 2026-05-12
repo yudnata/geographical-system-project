@@ -2,7 +2,7 @@
 import { RouterView } from 'vue-router'
 import NotificationToast from '@/components/UI/NotificationToast.vue'
 import ConfirmModal from '@/components/Modals/ConfirmModal.vue'
-import PointFormModal from '@/features/dashboard/components/PointFormModal.vue'
+import PointModal from '@/features/points/components/PointModal.vue'
 import ProfileCompletionModal from '@/features/auth/components/ProfileCompletionModal.vue'
 import UserProfileModal from '@/features/auth/components/UserProfileModal.vue'
 
@@ -12,7 +12,7 @@ import UserProfileModal from '@/features/auth/components/UserProfileModal.vue'
   <RouterView />
   <NotificationToast />
   <ConfirmModal />
-  <PointFormModal />
+  <PointModal />
   <ProfileCompletionModal />
   <UserProfileModal />
 </template>

@@ -5,9 +5,9 @@ import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
-import { useMapPointsStore } from '@/stores/mapPoints'
+import { usePointsStore } from '@/stores/pointsStore'
 import { useAuthStore } from '@/stores/auth'
-import { useMapUIStore } from '@/stores/mapUI'
+import { useUIStore } from '@/stores/uiStore'
 import { storeToRefs } from 'pinia'
 import MapLegend from './MapLegend.vue'
 import MapPopupContent from './MapPopupContent.vue'
@@ -23,9 +23,9 @@ const emit = defineEmits<{
 }>()
 
 
-const store = useMapPointsStore()
+const store = usePointsStore()
 const authStore = useAuthStore()
-const uiStore = useMapUIStore()
+const uiStore = useUIStore()
 
 const { filteredPoints, objectTypes } = storeToRefs(store)
 const { isEditMode, isSidebarExpanded, flyToCoords } = storeToRefs(uiStore)

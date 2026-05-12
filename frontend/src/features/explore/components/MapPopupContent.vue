@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useMapPointsStore } from '@/stores/mapPoints'
-import { useMapUIStore } from '@/stores/mapUI'
-import type { GeoPoint } from '@/types/map'
+import { usePointsStore } from '@/stores/pointsStore'
+import { useUIStore } from '@/stores/uiStore'
+import type { GeoPoint } from '@/types/pointTypes'
 
 const props = defineProps<{
   point: GeoPoint
@@ -11,8 +11,8 @@ const props = defineProps<{
 }>()
 
 const authStore = useAuthStore()
-const store = useMapPointsStore()
-const uiStore = useMapUIStore()
+const store = usePointsStore()
+const uiStore = useUIStore()
 
 const getCategoryIcon = () => {
   const iconName = store.objectTypes.find(t => t.id === props.point.category_id)?.icon || ''

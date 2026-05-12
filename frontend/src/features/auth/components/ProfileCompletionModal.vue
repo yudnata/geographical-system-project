@@ -79,8 +79,6 @@ const submitProfile = async () => {
               class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm outline-none" />
           </div>
 
-
-
           <div class="pt-4 flex justify-end">
             <button type="submit" :disabled="isLoading"
               class="bg-primary text-white font-bold py-2.5 px-6 rounded-lg hover:bg-primary/90 transition-all shadow-md shadow-primary/20 disabled:opacity-50">

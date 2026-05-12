@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useMapUIStore } from '@/stores/mapUI'
+import { useUIStore } from '@/stores/uiStore'
 import { useNotificationStore } from '@/stores/notifications'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 const authStore = useAuthStore()
-const uiStore = useMapUIStore()
+const uiStore = useUIStore()
 const notify = useNotificationStore()
 
 
