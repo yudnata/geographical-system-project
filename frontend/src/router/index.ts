@@ -29,7 +29,7 @@ const router = createRouter({
         {
           path: 'dashboard',
           name: 'dashboard',
-          component: () => import('@/features/management/pages/AdminDashboard.vue'),
+          component: () => import('@/features/points/pages/MyMapPage.vue'),
           meta: { requiresAuth: true },
         },
         {
@@ -66,7 +66,7 @@ const router = createRouter({
         {
           path: 'contributor/dashboard',
           name: 'contributor-dashboard',
-          component: () => import('@/features/management/pages/ContributorDashboard.vue'),
+          component: () => import('@/features/points/pages/MyContributionsPage.vue'),
           meta: { requiresAuth: true },
         },
       ],
@@ -74,8 +74,12 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const authStore = useAuthStore()
+
+  if (authStore.token && !authStore.user) {
+    await authStore.fetchProfile()
+  }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated()) {
     return { name: 'login' }

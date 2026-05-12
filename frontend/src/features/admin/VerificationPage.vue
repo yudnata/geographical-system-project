@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { usePointsStore } from '@/stores/pointsStore'
 import { useUIStore } from '@/stores/uiStore'
 import { useNotificationStore } from '@/stores/notifications'
@@ -20,6 +20,10 @@ const isPreviewOpen = ref(false)
 const showRejectModal = ref(false)
 const rejectionNote = ref('')
 const isProcessing = ref(false)
+
+watch(isPreviewOpen, (newVal) => {
+  uiStore.isReviewModalOpen = newVal
+})
 
 const fetchPending = async () => {
   isLoading.value = true
@@ -96,24 +100,7 @@ const getCategoryName = (id?: number) => {
   return store.objectTypes.find(t => t.id === id)?.name || 'Kategori'
 }
 
-const getCategoryIcon = (id?: number) => {
-  const iconName = store.objectTypes.find(t => t.id === id)?.icon || ''
-
-  const icons: Record<string, string> = {
-    'temple': 'M12 2l-4 3h8l-4-3zm0 4l-6 4h12l-6-4zm0 5l-8 6h16l-8-6zm-2 6h4v5h-4z',
-    'waterfall': 'M12 2v16M9 6c-2 0-3 1-3 3v13M15 6c2 0 3 1 3 3v13M12 22v-2',
-    'beach': 'M12 10a4 4 0 100-8 4 4 0 000 8z M2 17c2 0 3-1 5-1s3 1 5 1 3-1 5-1 3 1 5 1 M2 21c2 0 3-1 5-1s3 1 5 1 3-1 5-1 3 1 5 1',
-    'mountain': 'M3 20l9-16 9 16H3z M8 11l4-3 4 3',
-    'hill': 'M2 20c4-6 10-6 14 0 M12 20c4-4 8-4 10 0',
-    'lake': 'M12 21c-5 0-9-2-9-5s4-5 9-5 9 2 9 5-4 5-9 5z M12 17a3 3 0 110-6 3 3 0 010 6z',
-    'forest': 'M12 2l3 5H9l3-5zm0 6l4 7H8l4-7zm0 7v5',
-    'village': 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z',
-    'museum': 'M4 22V10h16v12M2 10l10-8 10 8M9 14v4M15 14v4',
-    'market': 'M3 3h18v2H3V3zm3 4v14h12V7H6zM10 7v14M14 7v14'
-  }
-
-  return icons[iconName] || 'M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z'
-}
+import { getIconPath } from '@/constants/icons'
 </script>
 
 <template>
@@ -198,7 +185,7 @@ const getCategoryIcon = (id?: number) => {
             </div>
             <div>
               <h3 class="text-xl font-black text-gray-900 tracking-tight">Tinjau Pengajuan</h3>
-              <p class="text-[10px] text-gray-400 font-bold tracking-widest mt-1">ID: #{{ selectedPoint.id }} • Kontributor: {{ selectedPoint.owner_name }}</p>
+              <p class="text-[10px] text-gray-400 font-bold tracking-widest mt-1">ID: #{{ selectedPoint?.id }} • Kontributor: {{ selectedPoint?.owner_name }}</p>
             </div>
           </div>
           <button @click="isPreviewOpen = false" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 text-gray-400 hover:text-gray-900 transition-colors">
@@ -213,10 +200,10 @@ const getCategoryIcon = (id?: number) => {
             <div class="lg:col-span-4 space-y-10">
               <div class="space-y-8">
                 <div v-for="info in [
-                  { label: 'Nama Objek', value: selectedPoint.name, icon: 'M3.75 6h16.5M3.75 12h16.5m-16.5 5.25h16.5', color: 'text-primary' },
-                  { label: 'Kategori', value: getCategoryName(selectedPoint.category_id), icon: getCategoryIcon(selectedPoint.category_id), color: 'text-amber-500' },
-                  { label: 'Lokasi Spasial', value: `${selectedPoint.latitude}, ${selectedPoint.longitude}`, icon: 'M15 10.5a3 3 0 11-6 0 3 3 0 016 0z', color: 'text-emerald-500' },
-                  { label: 'Alamat Lengkap', value: selectedPoint.address, icon: 'M15 10.5a3 3 0 11-6 0 3 3 0 016 0z', color: 'text-emerald-500' }
+                  { label: 'Nama Objek', value: selectedPoint?.name, icon: 'M3.75 6h16.5M3.75 12h16.5m-16.5 5.25h16.5', color: 'text-primary' },
+                  { label: 'Kategori', value: getCategoryName(selectedPoint?.category_id), icon: getIconPath(store.objectTypes.find(t => t.id === selectedPoint?.category_id)?.icon), color: 'text-amber-500' },
+                  { label: 'Lokasi Spasial', value: `${selectedPoint?.latitude}, ${selectedPoint?.longitude}`, icon: 'M15 10.5a3 3 0 11-6 0 3 3 0 016 0z', color: 'text-emerald-500' },
+                  { label: 'Alamat Lengkap', value: selectedPoint?.address, icon: 'M15 10.5a3 3 0 11-6 0 3 3 0 016 0z', color: 'text-emerald-500' }
                 ]" :key="info.label" class="flex gap-4">
                   <div :class="['w-5 h-5 mt-0.5 shrink-0', info.color]">
                     <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-full h-full">
@@ -330,10 +317,23 @@ const getCategoryIcon = (id?: number) => {
 :deep(.prose-bali p),
 :deep(.ql-editor p) {
   margin-bottom: 1.25rem !important;
+  text-align: justify !important;
+}
+
+:deep(.ql-align-center) {
+  text-align: center !important;
+}
+
+:deep(.ql-align-right) {
+  text-align: right !important;
+}
+
+:deep(.ql-align-justify) {
+  text-align: justify !important;
 }
 
 :deep(.prose-bali img) {
-  border-radius: 1.5rem !important;
+  border-radius: 0 !important;
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1) !important;
   margin: 2rem 0 !important;
 }

@@ -32,6 +32,11 @@ const handleClose = () => {
   errorMsg.value = ''
 }
 
+const handleLogout = () => {
+  uiStore.isLogoutModalOpen = true
+  handleClose()
+}
+
 
 const isChangingPassword = ref(false)
 const isEditingProfile = ref(false)
@@ -357,14 +362,17 @@ const handleChangePassword = async () => {
                 {{ errorMsg }}
               </div>
 
-              <div class="flex items-center justify-between">
-                <p v-if="!authStore.user" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+              <div class="flex items-center justify-end gap-3">
+                <p v-if="!authStore.user" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mr-auto">
                   Sesi Terbatas. Masuk untuk sinkronisasi.
                 </p>
-                <div v-else></div>
 
-                <button @click="handleClose"
-                  class="px-10 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-slate-800 transition-all shadow-xl shadow-slate-200">
+                <button v-if="authStore.user" @click="handleLogout"
+                  class="px-8 py-3.5 bg-rose-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-rose-600 transition-all">
+                  Keluar
+                </button>
+
+                <button @click="handleClose" class="px-8 py-3.5 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-emerald-700 transition-all">
                   Tutup Pengaturan
                 </button>
               </div>

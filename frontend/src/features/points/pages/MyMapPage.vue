@@ -14,7 +14,6 @@ onMounted(() => {
   uiStore.isEditMode = false
 })
 
-
 const handleMapClick = (data: { lat: number; lng: number; address?: string }) => {
   notificationStore.info('Membuka form...')
   store.openModal({

@@ -17,11 +17,13 @@ type MapPoint struct {
 	Address       string    `json:"address"`
 	OwnerID       string    `json:"owner_id"`
 	OwnerName     string    `json:"owner_name"`
+	OwnerEmail    string    `json:"owner_email"`
 	OwnerAvatar   string    `json:"owner_avatar"`
 	TahunBerdiri  *string   `json:"tahun_berdiri"`
 	Description   string    `json:"description"`
 	CoverImage    *string   `json:"cover_image"`
 	Status        string    `json:"status"`
+	BlogContent   string    `json:"blog_content"`
 	RejectionNote *string   `json:"rejection_note"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`

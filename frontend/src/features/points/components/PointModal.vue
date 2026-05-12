@@ -48,7 +48,6 @@ watch(() => store.activePoint, async (newPoint) => {
   activeTab.value = 'data'
 }, { immediate: true })
 
-
 const submitForm = async (status: 'draft' | 'pending') => {
   if (!formData.value.name || !formData.value.latitude || !formData.value.longitude) {
     notificationStore.warning('Nama dan Koordinat wajib diisi!')
@@ -150,12 +149,11 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 <style scoped>
 .modal-fade-enter-active,
 .modal-fade-leave-active {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: none !important;
 }
 
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
-  transform: scale(0.9) translateY(20px);
 }
 </style>

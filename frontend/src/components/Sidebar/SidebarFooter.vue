@@ -2,11 +2,13 @@
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/uiStore'
+import { useNotificationStore } from '@/stores/notifications'
 import LogoutConfirmModal from './LogoutConfirmModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const uiStore = useUIStore()
+const notify = useNotificationStore()
 
 const handleLogout = () => {
   uiStore.isLogoutModalOpen = true
@@ -15,6 +17,7 @@ const handleLogout = () => {
 const confirmLogout = () => {
   authStore.logout()
   uiStore.isLogoutModalOpen = false
+  notify.success('Berhasil keluar dari aplikasi')
   router.push('/')
 }
 

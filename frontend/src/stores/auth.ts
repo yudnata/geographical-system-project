@@ -32,6 +32,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const token = ref<string | null>(localStorage.getItem('auth_token'))
   const user = ref<User | null>(null)
+  const profilePromise = ref<Promise<void> | null>(null)
 
   const fetchConfig = async () => {
     try {
@@ -56,26 +57,39 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = () => {
     token.value = null
     user.value = null
+    profilePromise.value = null
     localStorage.removeItem('auth_token')
   }
 
   const fetchProfile = async () => {
     if (!token.value) return
-    try {
-      const res = await fetch(`${API_URL}/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
-        },
-      })
-      const data = await res.json()
-      if (data.success) {
-        user.value = data.data
-      } else {
-        logout()
-      }
-    } catch (e) {
-      console.error('[AuthStore] Failed to fetch profile', e)
+    if (user.value) return
+
+    if (profilePromise.value) {
+      return profilePromise.value
     }
+
+    profilePromise.value = (async () => {
+      try {
+        const res = await fetch(`${API_URL}/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${token.value}`,
+          },
+        })
+        const data = await res.json()
+        if (data.success) {
+          user.value = data.data
+        } else {
+          logout()
+        }
+      } catch (e) {
+        console.error('[AuthStore] Failed to fetch profile', e)
+      } finally {
+        profilePromise.value = null
+      }
+    })()
+
+    return profilePromise.value
   }
 
   if (token.value && !user.value) {

@@ -17,10 +17,11 @@ func NewRepository(db *pgxpool.Pool) *Repository {
 }
 
 const mapPointSelectQuery = `
-	SELECT gp.id, gp.category_id, gp.name, gp.latitude, gp.longitude, gp.address, gp.owner_id, COALESCE(u.full_name, 'Sistem'), COALESCE(u.avatar_url, ''),
-	gp.tahun_berdiri, gp.description, gp.cover_image, gp.status, gp.rejection_note, gp.created_at, gp.updated_at
+	SELECT gp.id, gp.category_id, gp.name, gp.latitude, gp.longitude, gp.address, gp.owner_id, COALESCE(u.full_name, 'Sistem'), COALESCE(u.email, ''), COALESCE(u.avatar_url, ''),
+	gp.tahun_berdiri, gp.description, gp.cover_image, gp.status, COALESCE(b.content, ''), gp.rejection_note, gp.created_at, gp.updated_at
 	FROM map_points gp
 	LEFT JOIN users u ON gp.owner_id = u.id
+	LEFT JOIN blogs b ON gp.id = b.map_point_id
 `
 
 func (r *Repository) scanMapPoints(rows pgx.Rows) ([]MapPoint, error) {
@@ -31,8 +32,8 @@ func (r *Repository) scanMapPoints(rows pgx.Rows) ([]MapPoint, error) {
 		var p MapPoint
 		err := rows.Scan(
 			&p.ID, &p.CategoryID, &p.Name, &p.Latitude, &p.Longitude,
-			&p.Address, &p.OwnerID, &p.OwnerName, &p.OwnerAvatar, &p.TahunBerdiri,
-			&p.Description, &p.CoverImage, &p.Status, &p.RejectionNote, &p.CreatedAt, &p.UpdatedAt,
+			&p.Address, &p.OwnerID, &p.OwnerName, &p.OwnerEmail, &p.OwnerAvatar, &p.TahunBerdiri,
+			&p.Description, &p.CoverImage, &p.Status, &p.BlogContent, &p.RejectionNote, &p.CreatedAt, &p.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -107,11 +108,11 @@ func (r *Repository) GetMyPoints(ctx context.Context, ownerID string) ([]MapPoin
 func (r *Repository) GetByID(ctx context.Context, id int) (*MapPoint, error) {
 	var p MapPoint
 	err := r.db.QueryRow(ctx,
-		`SELECT gp.id, gp.category_id, gp.name, gp.latitude, gp.longitude, gp.address, gp.owner_id, COALESCE(u.full_name, 'Sistem'), COALESCE(u.avatar_url, ''), gp.tahun_berdiri, gp.description, gp.cover_image, gp.status, gp.rejection_note, gp.created_at, gp.updated_at 
-		 FROM map_points gp LEFT JOIN users u ON gp.owner_id = u.id WHERE gp.id=$1`, id).Scan(
+		`SELECT gp.id, gp.category_id, gp.name, gp.latitude, gp.longitude, gp.address, gp.owner_id, COALESCE(u.full_name, 'Sistem'), COALESCE(u.email, ''), COALESCE(u.avatar_url, ''), gp.tahun_berdiri, gp.description, gp.cover_image, gp.status, COALESCE(b.content, ''), gp.rejection_note, gp.created_at, gp.updated_at 
+		 FROM map_points gp LEFT JOIN users u ON gp.owner_id = u.id LEFT JOIN blogs b ON gp.id = b.map_point_id WHERE gp.id=$1`, id).Scan(
 		&p.ID, &p.CategoryID, &p.Name, &p.Latitude, &p.Longitude,
-		&p.Address, &p.OwnerID, &p.OwnerName, &p.OwnerAvatar, &p.TahunBerdiri,
-		&p.Description, &p.CoverImage, &p.Status, &p.RejectionNote, &p.CreatedAt, &p.UpdatedAt,
+		&p.Address, &p.OwnerID, &p.OwnerName, &p.OwnerEmail, &p.OwnerAvatar, &p.TahunBerdiri,
+		&p.Description, &p.CoverImage, &p.Status, &p.BlogContent, &p.RejectionNote, &p.CreatedAt, &p.UpdatedAt,
 	)
 	if err != nil {
 		return nil, err

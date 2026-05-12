@@ -20,8 +20,8 @@ const handleConfirm = async () => {
 
 <template>
   <div v-if="store.confirmState.isOpen" class="fixed inset-0 z-[9999] flex items-center justify-center">
-    <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" @click="store.cancelConfirm"></div>
-    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden transform transition-all border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+    <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="store.cancelConfirm"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-0">
       <div class="p-6 text-center">
         <div class="w-14 h-14 rounded-full bg-red-50 text-red-500 mx-auto flex items-center justify-center mb-4 ring-8 ring-red-50/50">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7">

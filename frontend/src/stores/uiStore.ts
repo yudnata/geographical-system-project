@@ -6,6 +6,8 @@ export const useUIStore = defineStore('ui', () => {
   const isSidebarExpanded = ref(false)
   const isProfileModalOpen = ref(false)
   const isLogoutModalOpen = ref(false)
+  const isReviewModalOpen = ref(false)
+  const isCategoryModalOpen = ref(false)
 
   const isEditMode = ref(false)
   const flyToCoords = ref<{ lat: number; lng: number } | null>(null)
@@ -14,7 +16,7 @@ export const useUIStore = defineStore('ui', () => {
   const searchQuery = ref('')
   const filterTypeId = ref<number | null>(null)
   const filterMyPoints = ref(false)
-  const statusFilter = ref<'all' | 'draft' | 'approved'>('all')
+  const statusFilter = ref<'all' | 'draft' | 'pending' | 'approved' | 'rejected'>('all')
 
   const toggleSidebar = () => {
     isSidebarExpanded.value = !isSidebarExpanded.value
@@ -44,6 +46,8 @@ export const useUIStore = defineStore('ui', () => {
     isSidebarExpanded,
     isProfileModalOpen,
     isLogoutModalOpen,
+    isReviewModalOpen,
+    isCategoryModalOpen,
     isEditMode,
     flyToCoords,
     selectedPreviewPoint,

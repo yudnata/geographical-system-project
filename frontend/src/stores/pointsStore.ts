@@ -187,15 +187,18 @@ export const usePointsStore = defineStore('points', () => {
       const matchSearch =
         point.name.toLowerCase().includes(uiStore.searchQuery.toLowerCase()) ||
         (point.address && point.address.toLowerCase().includes(uiStore.searchQuery.toLowerCase()))
+
       const matchType = !uiStore.filterTypeId || point.category_id === uiStore.filterTypeId
 
       const matchOwner = !uiStore.filterMyPoints || point.owner_id === authStore.user?.id
 
       let matchStatus = true
-      if (uiStore.statusFilter === 'draft') {
-        matchStatus = point.status === 'draft' || !point.status
-      } else if (uiStore.statusFilter === 'approved') {
-        matchStatus = point.status === 'approved'
+      if (uiStore.statusFilter !== 'all') {
+        if (uiStore.statusFilter === 'draft') {
+          matchStatus = point.status === 'draft' || !point.status
+        } else {
+          matchStatus = point.status === uiStore.statusFilter
+        }
       }
 
       return matchSearch && matchType && matchOwner && matchStatus

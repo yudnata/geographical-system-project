@@ -5,10 +5,12 @@ import AppSidebar from '@/components/Sidebar/AppSidebar.vue'
 import AppHeader from '@/components/Header/AppHeader.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/uiStore'
+import { usePointsStore } from '@/stores/pointsStore'
 
 const route = useRoute()
 const authStore = useAuthStore()
 const uiStore = useUIStore()
+const pointsStore = usePointsStore()
 
 watch(() => route.path, () => {
   uiStore.setSelectedPreviewPoint(null)
@@ -19,6 +21,14 @@ const hideHeader = computed(() => {
   return routesWithoutHeader.some(path => route.path.startsWith(path))
 })
 
+const isBlurred = computed(() => {
+  return uiStore.isProfileModalOpen ||
+    uiStore.isLogoutModalOpen ||
+    uiStore.isReviewModalOpen ||
+    uiStore.isCategoryModalOpen ||
+    pointsStore.isModalOpen ||
+    pointsStore.confirmState.isOpen
+})
 </script>
 
 
@@ -42,7 +52,10 @@ const hideHeader = computed(() => {
         </nav>
       </header>
 
-      <main class="flex-1 relative overflow-hidden bg-surface h-full flex flex-col min-h-0">
+      <main :class="[
+        'flex-1 relative overflow-hidden bg-surface h-full flex flex-col min-h-0 transition-all duration-300',
+        { '!duration-0': isBlurred }
+      ]">
         <RouterView />
       </main>
 

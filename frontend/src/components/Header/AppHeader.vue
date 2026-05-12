@@ -15,6 +15,8 @@ const pointsStore = usePointsStore()
 const isBlurred = computed(() => {
   return uiStore.isProfileModalOpen ||
     uiStore.isLogoutModalOpen ||
+    uiStore.isReviewModalOpen ||
+    uiStore.isCategoryModalOpen ||
     pointsStore.isModalOpen ||
     pointsStore.confirmState.isOpen ||
     !!uiStore.selectedPreviewPoint
@@ -36,13 +38,13 @@ const isDashboard = computed(() => route.path === '/dashboard')
 
 <template>
   <header :class="[
-    'hidden md:flex absolute top-4 right-4 h-16 shrink-0 z-[10000] transition-all duration-500 ease-in-out bg-transparent will-change-[left,filter]',
+    'hidden md:flex absolute top-4 right-4 h-16 shrink-0 z-[10000] transition-all duration-300 ease-in-out bg-transparent will-change-[left,filter]',
     uiStore.isSidebarExpanded ? 'left-[288px]' : 'left-24',
     { 'pointer-events-none': isBlurred }
   ]">
     <div :class="[
-      'flex-1 flex items-center justify-between bg-white border border-gray-100 px-6 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition-all duration-300',
-      { 'blur-[4px] opacity-0': isBlurred }
+      'flex-1 flex items-center justify-between bg-white border border-gray-100 px-6 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition-all duration-200',
+      { 'blur-[4px] opacity-0 !duration-0': isBlurred }
     ]">
       <div class="flex items-center gap-4 shrink-0">
         <h2 class="text-lg font-bold text-gray-800 whitespace-nowrap">{{ pageTitle }}</h2>

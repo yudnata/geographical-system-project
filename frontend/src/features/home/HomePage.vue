@@ -108,6 +108,30 @@ const breakingNews = computed(() => {
   return [...titles, ...titles, ...titles].slice(0, 15)
 })
 
+const stripHtml = (html?: string, excludeTitle?: string) => {
+  if (!html) return ''
+  let text = html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim()
+
+  if (excludeTitle) {
+    const cleanTitle = excludeTitle.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim()
+    const cleanText = text.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim()
+    if (cleanText.startsWith(cleanTitle) || (cleanTitle.length > 5 && cleanText.startsWith(cleanTitle.substring(0, 15)))) {
+      const firstSentence = text.indexOf('.')
+      if (firstSentence > 0 && firstSentence < 100) {
+        const sentence = text.substring(0, firstSentence).toLowerCase()
+        const firstWord = cleanTitle.split(' ')[0]
+        if (firstWord && sentence.includes(firstWord)) {
+          text = text.substring(firstSentence + 1).trim()
+        }
+      } else {
+        text = text.substring(excludeTitle.length).trim()
+      }
+    }
+  }
+
+  return text.replace(/^[:\-\s,]+/, '').trim()
+}
+
 </script>
 
 <template>
@@ -198,21 +222,24 @@ const breakingNews = computed(() => {
           <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest flex-shrink-0">Top Headlines</h3>
           <div class="h-px bg-gray-200 flex-grow"></div>
         </div>
-        <div class="flex flex-col gap-8">
+        <div class="flex flex-col gap-5">
           <div v-for="point in headlines" :key="point.id" class="group cursor-pointer relative">
             <RouterLink :to="`/blog/${point.id}`" class="flex gap-4 items-start">
-              <div class="w-20 h-14 shrink-0 overflow-hidden bg-gray-50 rounded-sm">
+              <div class="w-28 h-20 shrink-0 overflow-hidden bg-gray-50 rounded-sm shadow-sm">
                 <img v-if="point.cover_image" :src="point.cover_image" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
               </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest mb-1">
+              <div class="flex-1 min-w-0 py-0.5">
+                <div class="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest mb-1">
                   <span class="text-primary">{{ getTypeName(point.category_id) }}</span>
                   <span class="text-gray-300">/</span>
                   <span class="text-gray-400">{{ formatDate(point.created_at) }}</span>
                 </div>
-                <h4 class="text-[12px] font-black text-gray-800 group-hover:text-primary transition-colors leading-tight line-clamp-2 tracking-tight">
+                <h4 class="text-sm font-black text-gray-800 group-hover:text-primary transition-colors leading-tight line-clamp-1 tracking-tight mb-1">
                   {{ point.name }}
                 </h4>
+                <p class="text-xs text-gray-500 font-medium line-clamp-2 leading-relaxed">
+                  {{ stripHtml(point.blog_content, point.name) || 'Pelajari warisan budaya ini lebih dalam...' }}
+                </p>
               </div>
             </RouterLink>
           </div>

@@ -111,6 +111,14 @@ const copyLink = async () => {
   }
 }
 
+const formatFullDate = (dateStr?: string) => {
+  if (!dateStr) return '-'
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+    ' - ' +
+    date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+}
+
 onMounted(fetchBlogDetail)
 
 </script>
@@ -130,13 +138,31 @@ onMounted(fetchBlogDetail)
 
     <div v-else-if="detail" class="max-w-4xl mx-auto">
       <!-- Header Section -->
-      <header class="mb-8">
-        <div class="flex items-center gap-3 mb-6">
+      <header class="mb-12">
+        <div class="flex items-center flex-wrap gap-6 mb-8 text-slate-500 border-b-2 border-slate-200 pb-8">
+          <span class="font-bold text-slate-900 text-sm tracking-tight">{{ detail.point.owner_email || 'admin@sig.bali.go.id' }}</span>
+
+          <div class="h-4 w-px bg-slate-200"></div>
+
+          <div class="flex items-center gap-2 text-[11px] font-bold text-slate-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ formatFullDate(detail.point.created_at) }}</span>
+          </div>
+
+          <div class="flex items-center gap-2 text-[11px] font-bold text-slate-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span>{{ formatFullDate(detail.blog.updated_at) }}</span>
+          </div>
+
+          <div class="h-4 w-px bg-slate-200"></div>
+
           <span class="px-3 py-1 bg-amber-100 text-amber-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-amber-200">
             {{ getCategoryName(detail.point.category_id) }}
-          </span>
-          <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
-            Ditinjau pada {{ new Date(detail.blog.updated_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) }}
           </span>
         </div>
       </header>
@@ -246,14 +272,19 @@ onMounted(fetchBlogDetail)
 
 :deep(.prose-bali p) {
   margin-bottom: 1.25rem !important;
+  text-align: justify !important;
 }
+
+:deep(.ql-align-center) { text-align: center !important; }
+:deep(.ql-align-right) { text-align: right !important; }
+:deep(.ql-align-justify) { text-align: justify !important; }
 
 :deep(.prose-bali img) {
   display: block !important;
   margin: 2.5rem auto !important;
   max-width: 100% !important;
   height: auto !important;
-  border-radius: 1.5rem !important;
+  border-radius: 0 !important;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
 }
 
