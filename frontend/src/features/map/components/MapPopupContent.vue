@@ -51,7 +51,7 @@ const handleDelete = () => {
 </script>
 
 <template>
-  <div class="p-0 font-sans flex flex-col h-full bg-white">
+  <div class="p-0 font-sans flex flex-col h-full bg-white ">
     <div v-if="point.cover_image" class="h-48 w-full bg-slate-100 relative">
       <img :src="point.cover_image" class="w-full h-full object-cover">
 

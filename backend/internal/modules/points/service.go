@@ -140,6 +140,7 @@ func (s *Service) GetBlogDetail(ctx context.Context, pointID int) (*BlogDetailRe
 		return nil, errors.New("Blog tidak ditemukan")
 	}
 
+
 	point, err := s.repo.GetByID(ctx, pointID)
 	if err != nil {
 		return nil, errors.New("Titik peta tidak ditemukan")

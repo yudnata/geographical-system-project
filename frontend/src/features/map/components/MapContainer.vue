@@ -116,10 +116,6 @@ onMounted(async () => {
     bounceAtZoomLimits: true
   }).setView([-8.4095, 115.1889], 11)
 
-
-
-
-
   L.control.zoom({ position: 'bottomleft' }).addTo(map)
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -339,10 +335,10 @@ watch(flyToCoords, (newCoords) => {
     <Transition name="fade-modal">
       <div v-if="uiStore.selectedPreviewPoint" class="absolute inset-0 z-[1000] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
         @click.self="uiStore.setSelectedPreviewPoint(null)">
-        <div class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 modal-content">
+        <div class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden modal-content">
           <!-- Close Button -->
           <button @click="uiStore.setSelectedPreviewPoint(null)"
-            class="absolute top-4 right-4 w-10 h-10 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white rounded-full flex items-center justify-center z-10 transition-colors shadow-sm">
+            class="absolute top-4 right-4 w-7 h-7 bg-white/20 hover:bg-white/40 backdrop-blur-md text-white rounded-full flex items-center justify-center z-10 transition-colors shadow-sm">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
