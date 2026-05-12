@@ -118,8 +118,11 @@ onMounted(fetchUsers)
             <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-blue-50/40 transition-colors group">
               <td class="py-4 px-6">
                 <div class="flex items-center gap-4">
-                  <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-xs font-black text-white shadow-lg shadow-primary/20 flex-shrink-0">
-                    {{ user.full_name?.charAt(0).toUpperCase() || '?' }}
+                  <div class="w-10 h-10 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 shadow-sm border border-gray-50">
+                    <img v-if="user.avatar_url" :src="user.avatar_url" class="w-full h-full object-cover" />
+                    <div v-else class="w-full h-full bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-xs font-black text-white">
+                      {{ user.full_name?.charAt(0).toUpperCase() || '?' }}
+                    </div>
                   </div>
                   <div>
                     <p class="text-sm font-black text-gray-900 tracking-tight">{{ user.full_name }}</p>

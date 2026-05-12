@@ -38,11 +38,11 @@ const headlines = computed(() => {
   if (remaining.length >= 5) {
     return remaining.slice(0, 5)
   }
-  
+
   if (allFiltered.length <= 5) {
     return allFiltered
   }
-  
+
   return allFiltered.slice(0, 5)
 })
 
@@ -112,17 +112,13 @@ const breakingNews = computed(() => {
 
 <template>
   <div :class="[
-    'h-full w-full transition-[padding] duration-500 ease-in-out overflow-y-auto bg-white scroll-smooth',
+    'h-full w-full transition-[padding] duration-500 ease-in-out overflow-y-auto bg-[#f8fafc] scroll-smooth',
     uiStore.isSidebarExpanded ? 'pl-[288px]' : 'pl-24',
     'pt-20 pb-12 pr-8'
   ]">
 
     <!-- Breaking News Bar -->
-    <div class="flex items-center bg-gray-50 border-b border-gray-100 mb-8 mx-4">
-      <div class="bg-primary/10 text-primary px-4 py-2 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shrink-0">
-        <span class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span>
-        Breaking News
-      </div>
+    <div class="flex items-center mb-8 mx-4">
       <div class="px-4 py-2 overflow-hidden whitespace-nowrap">
         <p class="text-[11px] font-bold text-gray-500 animate-scroll">
           <template v-for="(news, idx) in breakingNews" :key="idx">

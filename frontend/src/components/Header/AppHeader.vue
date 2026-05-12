@@ -22,7 +22,7 @@ const isBlurred = computed(() => {
 
 const pageTitle = computed(() => {
   if (route.path === '/') return 'Budaya Bali'
-  if (route.path === '/explore') return 'Eksplorasi Budaya Bali'
+  if (route.path === '/explore') return 'Eksplorasi Peta Budaya Bali'
   if (route.path === '/dashboard') return 'Kontribusi Saya'
   if (route.path === '/tabular') return 'Pustaka Data Master'
   if (route.path === '/admin/verification') return 'Verifikasi Objek'
